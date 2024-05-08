@@ -32,6 +32,10 @@ void Acceptor::newConnection(){
     //log accept
     printf("accept:%s:%d\n", clientaddr.ip(), clientaddr.port());
 
-    //new未释放,后面修改
-    Connection* Conn = new Connection(m_evloop, clientsock);
+    m_newConnCallback(clientsock);
+
+}
+
+void Acceptor::setnewConnCallback(std::function<void(Socket*)> fn){
+    m_newConnCallback = fn;
 }
