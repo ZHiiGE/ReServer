@@ -45,19 +45,17 @@ uint32_t Channel::revents(){
 
 //事件处理函数,epoll_wait()返回调用
 void Channel::handleEvent(){
-    if(m_revents & EPOLLRDHUP){//对方已关闭
-        //log
-        ::close(m_fd);
+    if(m_revents & EPOLLRDHUP){//对方已关闭 好像读不到
+        m_closeCallback();
     }
     else if(m_revents & (EPOLLIN|EPOLLPRI)){ //缓冲区由数据可读
         m_readCallback();
     }
     else if(m_revents & EPOLLOUT){//写事件
-
+        //code here
     }
     else{//其他事件视为错误
-        //log undefine event
-        ::close(m_fd);
+        m_errorCallback();
     }
 }
 
@@ -78,14 +76,19 @@ void Channel::onMessage(){
             break;
         }
         else if(nread == 0){//客户端断开连接
-            //log disconn
-            printf("client closed\n");
-            ::close(m_fd);
-            break;
+            m_closeCallback();
         }
     }
 }
 //设置读事件回调函数
 void Channel::setReadcallback(std::function<void()> fn){
     m_readCallback = fn;
+}
+
+void Channel::setClosecallback(std::function<void()> fn){
+    m_closeCallback = fn;
+}
+
+void Channel::setErrorcallback(std::function<void()> fn){
+    m_errorCallback = fn;
 }

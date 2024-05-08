@@ -20,8 +20,9 @@ private:
     bool m_inepoll = false;//是否加入epoll红黑树中
     uint32_t m_events = 0; //需要监视的事件
     uint32_t m_revents = 0;//已发生的事件
-    std::function<void()> m_readCallback;
-
+    std::function<void()> m_readCallback;//socket读事件回调函数
+    std::function<void()> m_closeCallback;//socket客户端关闭回调函数
+    std::function<void()> m_errorCallback;//错误事件回调函数
 
 public:
     Channel(EventLoop* evloop, int fd);
@@ -35,10 +36,12 @@ public:
     bool inEopll();
     uint32_t events();
     uint32_t revents();
-    void handleEvent();//事件处理函数,epoll_wait()返回调用
+    void handleEvent();//事件处理函数,epoll_wait()中使用
 
     void onMessage();
-    void setReadcallback(std::function<void()> fn);
+    void setReadcallback(std::function<void()> fn);//设置channel读事件回调函数,acceptor所属channel回调acceptor创建channel函数,connection所属channel回调onMessage()成员函数
+    void setClosecallback(std::function<void()> fn);//设置channel连接关闭回调函数
+    void setErrorcallback(std::function<void()> fn);//设置channel错误事件回调函数
 };
 
 #endif

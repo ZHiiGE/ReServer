@@ -20,7 +20,9 @@ public:
     ~TcpServer();
 
     void start();
-    void newConnection(Socket* clientsock);
+    void newConnection(Socket* clientsock);//处理客户端新连接
+    void closeConnection(Connection* conn);//客户端关闭,在Connection类中回调该函数
+    void errorConnection(Connection* conn);//客户端错误,在Connection类中回调该函数
 };
 
 #endif

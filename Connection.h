@@ -13,6 +13,8 @@ private:
     EventLoop* m_loop;
     Socket* m_clientsock;
     Channel* m_clientChannel;
+    std::function<void(Connection*)> m_closeCallback;//回调TcpServer::closeConnection()
+    std::function<void(Connection*)> m_errorCallback;//回调TcpServer::errorConnection()
 public:
     Connection(EventLoop* loop, Socket* clientsock);
     ~Connection();
@@ -20,6 +22,12 @@ public:
     int fd() const;
     std::string ip() const;
     uint16_t port() const;
+
+    void clossCallback();//供channel调用
+    void errorCallback();
+    void setCloseCallback(std::function<void(Connection*)> fn);
+    void setErrorCallback(std::function<void(Connection*)> fn);
+
 };
 
 

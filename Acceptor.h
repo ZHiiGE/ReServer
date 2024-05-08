@@ -17,6 +17,7 @@ private:
     Channel* m_acceptChannel;
 
     std::function<void(Socket*)> m_newConnCallback;
+    
 public:
     Acceptor(EventLoop* loop, const std::string &ip, const uint16_t &port);
     ~Acceptor();
