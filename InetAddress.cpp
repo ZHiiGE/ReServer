@@ -1,4 +1,6 @@
 #include "InetAddress.h"
+//默认构造函数
+InetAddress::InetAddress(){}
 //本地监听地址构造
 InetAddress::InetAddress(const std::string& ip, uint16_t port){
     m_addr.sin_family = AF_INET;
@@ -6,11 +8,7 @@ InetAddress::InetAddress(const std::string& ip, uint16_t port){
     m_addr.sin_port = htons(port);
 
 }
-//客户端地址构造
-InetAddress::InetAddress(const sockaddr_in addr):m_addr(addr)
-{
 
-}
 //析构
 InetAddress::~InetAddress()
 {
@@ -31,3 +29,7 @@ uint16_t InetAddress::port() const{
 const sockaddr* InetAddress::addr() const{
     return (sockaddr*)&m_addr;
 }
+
+void InetAddress::setaddr(sockaddr_in clientaddr){
+    m_addr = clientaddr;
+};
