@@ -61,20 +61,6 @@ void Channel::handleEvent(){
     }
 }
 
-void Channel::newConnection(Socket* servsock){
-    InetAddress clientaddr;
-
-    //传给对应Connection类,在Connection析构中释放
-    Socket *clientsock = new Socket(servsock->accept(clientaddr));
-
-    //log accept
-    printf("accept:%s:%d\n", clientaddr.ip(), clientaddr.port());
-
-    //new未释放,后面修改
-    Connection* Conn = new Connection(m_evloop, clientsock);
-
-    
-}
 
 void Channel::onMessage(){
     char buffer[1024];

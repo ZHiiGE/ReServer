@@ -2,6 +2,7 @@
 #define _ACCEPTOR_H
 
 #include "Channel.h"
+#include "Connection.h"
 
 /**
  * @class:Acceptor
@@ -11,13 +12,15 @@
 class Acceptor
 {
 private:
-    EventLoop* m_loop;
-    
+    EventLoop* m_evloop;
+
     Socket* m_servsock;
     Channel* m_acceptChannel;
 public:
     Acceptor(EventLoop* loop, const std::string &ip, const uint16_t &port);
     ~Acceptor();
+
+    void newConnection();
 };
 
 

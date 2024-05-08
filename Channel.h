@@ -37,7 +37,6 @@ public:
     uint32_t revents();
     void handleEvent();//事件处理函数,epoll_wait()返回调用
 
-    void newConnection(Socket* servsock);
     void onMessage();
     void setReadcallback(std::function<void()> fn);
 };
