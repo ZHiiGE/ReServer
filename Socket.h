@@ -20,11 +20,16 @@ int createListensocket();
 class Socket{
 private:
     const int m_fd;//socket的fd,文件描述符
+    std::string m_ip;//listensock存访监听的ip, 客户端sock存访客户端ip
+    uint16_t m_port;//listensock存访监听的port, 客户端sock存访客户端port
 public:
     Socket(int fd);
     ~Socket();
 
     int fd() const;
+    std::string ip() const;
+    uint16_t port() const;
+    
     void setReuseaddr(bool);//设置地址重使用,取消time_wait
     void setReuseport(bool);//设置端口重使用
     void setTcpnodelay(bool);//禁用 Nagle 算法，即禁用 TCP 的延迟确认机制，数据发送时立即发送而不缓存

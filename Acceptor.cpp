@@ -28,10 +28,6 @@ void Acceptor::newConnection(){
 
     //传给对应Connection类,在Connection析构中释放
     Socket *clientsock = new Socket(m_servsock->accept(clientaddr));
-
-    //log accept
-    printf("accept:%s:%d\n", clientaddr.ip(), clientaddr.port());
-
     m_newConnCallback(clientsock);
 
 }

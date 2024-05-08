@@ -11,3 +11,15 @@ Connection::Connection(EventLoop* loop, Socket* clientsock):m_loop(loop), m_clie
 Connection::~Connection(){
     delete m_clientChannel;
 }
+
+int Connection::fd() const {
+    return m_clientsock->fd();
+}
+
+std::string Connection::ip() const{
+    return m_clientsock->ip();
+}
+
+uint16_t Connection::port() const{
+    return m_clientsock->port();
+}
