@@ -52,8 +52,8 @@ void Socket::bind(const InetAddress& servaddr){
         ::close(m_fd);
         exit(-1);
     }
-    setIp(servaddr.ip());
-    setPort(servaddr.port());
+    m_ip = servaddr.ip();
+    m_port = servaddr.port();
 }
 
 void Socket::listen(int nums){
