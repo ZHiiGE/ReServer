@@ -57,7 +57,7 @@ void Connection::onMessage(){
             continue;
         }
         else if(nread == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))){//读取完毕
-            printf("recv(eventfd=%d):%s\n", fd() ,m_inputbuffer.data());
+            printf("recv(eventfd=%d, ip=%s, port=%d):%s\n", fd(), ip().c_str(), port() ,m_inputbuffer.data());
             /*
             数据处理
             */
