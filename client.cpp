@@ -8,7 +8,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <time.h>
-#include <iostream>
 
 int main(int argc, char *argv[])
 {
@@ -22,7 +21,7 @@ int main(int argc, char *argv[])
     int sockfd;
     struct sockaddr_in servaddr;
     char buf[1024];
-    std::string str;
+ 
     if ((sockfd=socket(AF_INET,SOCK_STREAM,0))<0) { printf("socket() failed.\n"); return -1; }
     
     memset(&servaddr,0,sizeof(servaddr));
@@ -36,31 +35,32 @@ int main(int argc, char *argv[])
     }
 
     printf("connect ok.\n");
-    // printf("开始时间：%d",time(0));
+    // printf("开始时间：%d\n",time(0));
 
-    for (int ii=0;ii<200000;ii++)
+    for (int ii=0;ii<100;ii++)
     {
-        // 从命令行输入内容。
         memset(buf,0,sizeof(buf));
-        printf("please input:"); 
-        // scanf("%s",buf);
-        std::getline(std::cin, str);
-        // std::cin>>str;
-        // buf = str.c_str();
+        sprintf(buf,"这是第%d个超级女生。",ii);
 
-        if (send(sockfd,str.c_str(),strlen(str.c_str()),0) <=0)       // 把命令行输入的内容发送给服务端。
-        { 
-            printf("write() failed.\n");  close(sockfd);  return -1;
-        }
+        char tmpbuf[1024];                 // 临时的buffer，报文头部+报文内容。
+        memset(tmpbuf,0,sizeof(tmpbuf));
+        int len=strlen(buf);                 // 计算报文的大小。
+        memcpy(tmpbuf,&len,4);       // 拼接报文头部。
+        memcpy(tmpbuf+4,buf,len);  // 拼接报文内容。
+
+        send(sockfd,tmpbuf,len+4,0);  // 把请求报文发送给服务端。
+    }
         
+    for (int ii=0;ii<100;ii++)
+    {
+        int len;
+        recv(sockfd,&len,4,0);            // 先读取4字节的报文头部。
+
         memset(buf,0,sizeof(buf));
-        if (recv(sockfd,buf,sizeof(buf),0) <=0)      // 接收服务端的回应。
-        { 
-            printf("read() failed.\n");  close(sockfd);  return -1;
-        }
+        recv(sockfd,buf,len,0);           // 读取报文内容。
 
         printf("recv:%s\n",buf);
     }
 
-    // printf("结束时间：%d",time(0));
+    // printf("结束时间：%d\n",time(0));
 } 

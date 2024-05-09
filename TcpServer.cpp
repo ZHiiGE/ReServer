@@ -17,10 +17,10 @@ void TcpServer::start(){
 }
 
 void TcpServer::newConnection(Socket* clientsock){
-        //new未释放,后面修改
     Connection* Conn = new Connection(&m_evloop, clientsock);
     Conn->setCloseCallback(std::bind(&TcpServer::closeConnection, this, Conn));
     Conn->setErrorCallback(std::bind(&TcpServer::errorConnection, this, Conn));
+    Conn->setHandleMessageCallback(std::bind(&TcpServer::handleMessage, this, Conn, std::placeholders::_1));
     //log new socket accept
     printf("new socket accept: ip:%s port:%d\n", Conn->ip().c_str(), Conn->port());
 
@@ -40,4 +40,18 @@ void TcpServer::errorConnection(Connection* conn){
     printf("error closed: %d\n", conn->fd());
     m_conns.erase(conn->fd());
     delete conn;
+}
+
+void TcpServer::handleMessage(Connection* conn, std::string message){
+    printf("message(eventfd=%d, ip=%s, port=%d):%s\n", conn->fd(), conn->ip().c_str(), conn->port() ,message.c_str());
+    message = "reply: " + message;
+    int len = message.size();
+    std::string tmp((char*)&len, 4);
+    tmp.append(message);
+    send(conn->fd(), tmp.data(), tmp.size(), 0);
+
+    // m_outputbuffer.clear();
+    // m_outputbuffer = m_inputbuffer;
+    // m_inputbuffer.clear();
+    // send(fd(), m_outputbuffer.data(),m_outputbuffer.size(),0);
 }

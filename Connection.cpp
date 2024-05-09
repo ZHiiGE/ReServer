@@ -28,19 +28,23 @@ uint16_t Connection::port() const{
 }
 //供channel调用
 void Connection::closeCallback(){
-    m_closeCallback(this);
+    m_closeCallback();
 }
 //供channel调用
 void Connection::errorCallback(){
-    m_errorCallback(this);
+    m_errorCallback();
 }
 //设置回调函数CloseCallback为TcpServer::closeconnection
-void Connection::setCloseCallback(std::function<void(Connection*)> fn){
+void Connection::setCloseCallback(std::function<void()> fn){
     m_closeCallback = fn;
 }
 //设置回调函数errorCallback为TcpServer::ererorconnection
-void Connection::setErrorCallback(std::function<void(Connection*)> fn){
+void Connection::setErrorCallback(std::function<void()> fn){
     m_errorCallback = fn;
+}
+//设置回调函数handleMessageCallback为TcpServer::handleMessage
+void Connection::setHandleMessageCallback(std::function<void(std::string)> fn){
+    m_handleMessageCallback = fn;
 }
 
 void Connection::onMessage(){
@@ -57,18 +61,22 @@ void Connection::onMessage(){
             continue;
         }
         else if(nread == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))){//读取完毕
-            printf("recv(eventfd=%d, ip=%s, port=%d):%s\n", fd(), ip().c_str(), port() ,m_inputbuffer.data());
-            /*
-            数据处理
-            */
-            m_outputbuffer.clear();
-            m_outputbuffer = m_inputbuffer;
-            m_inputbuffer.clear();
-            send(fd(), m_outputbuffer.data(),m_outputbuffer.size(),0);
+            while(true){
+                int len;//获取报文长度
+                memcpy(&len, m_inputbuffer.data(), 4);
+                if(m_inputbuffer.size()<len+4) break; //报文长度不足
+
+                std::string message(m_inputbuffer.data()+4, len);//获取报文体
+                m_inputbuffer.erase(0, len+4);//从缓冲区中删除以获取报文
+                //数据处理
+                m_handleMessageCallback(message);//回调TcpServer::handleMessage()
+            }
+
             break;
         }
         else if(nread == 0){//客户端断开连接
             closeCallback();
+            break;
         }
     }
 }
