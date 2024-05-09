@@ -4,6 +4,7 @@ Connection::Connection(EventLoop* loop, Socket* clientsock):m_loop(loop), m_clie
 
     m_clientChannel = new Channel(m_loop, clientsock->fd());
     m_clientChannel->setReadcallback(std::bind(&Connection::onMessage, this));      //读事件回调对应connection的onMessage
+    m_clientChannel->setWritecallback(std::bind(&Connection::writeCallback, this));      //读事件回调对应connection的onMessage
     m_clientChannel->setClosecallback(std::bind(&Connection::closeCallback, this)); //关闭事件回调对应connection的clossCallback
     m_clientChannel->setErrorcallback(std::bind(&Connection::errorCallback, this)); //错误事件回调对应connection的errorCallback
     m_clientChannel->useET();//边缘触发
@@ -52,9 +53,7 @@ void Connection::onMessage(){
     while(true){
         bzero(&buffer, sizeof(buffer));
         ssize_t nread = read(fd(), buffer, sizeof(buffer));
-        if(nread >0 ){//success
-            // printf("recv(eventfd=%d):%s\n", fd() ,buffer);
-            // send(fd(), buffer, strlen(buffer), 0);
+        if(nread >0 ){
             m_inputbuffer.append(buffer, nread);
         }
         else if(nread == -1 && errno == EINTR){//由信号中断 则继续读取
@@ -78,5 +77,21 @@ void Connection::onMessage(){
             closeCallback();
             break;
         }
+    }
+}
+
+void Connection::send(const char* data, size_t size){
+    m_outputbuffer.append(data, size);
+    m_clientChannel->enablewriting();
+}
+
+void Connection::writeCallback(){
+    //尝试全部发送m_outputbuffer中的数据
+    int write = ::send(fd(), m_outputbuffer.data(), m_outputbuffer.size(), 0);
+    if(write>0){
+        m_outputbuffer.erase(0, write);//删除已发送数据
+    }
+    if(m_outputbuffer.size() == 0){
+        m_clientChannel->disablewriting();//发送完毕,取消监听写事件
     }
 }

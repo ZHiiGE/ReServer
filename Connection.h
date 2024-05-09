@@ -32,12 +32,21 @@ public:
     uint16_t port() const;
 
     //读取接收缓冲区数据
-    void onMessage();   
-    void closeCallback();//供channel调用
-    void errorCallback();//供channel调用
-    void setCloseCallback(std::function<void()> fn);//回调TcpServer::closeConnection()
-    void setErrorCallback(std::function<void()> fn);//回调TcpServer::errorConnection()
-    void setHandleMessageCallback(std::function<void(std::string)> fn);//回调TcpServer::errorConnection()
+    void onMessage(); 
+    //供channel调用 关闭socket  
+    void closeCallback();
+    //供channel调用 错误 关闭socket
+    void errorCallback();
+    //写事件处理 共channel回调
+    void writeCallback();
+    //回调TcpServer::closeConnection()
+    void setCloseCallback(std::function<void()> fn);
+    //回调TcpServer::errorConnection()
+    void setErrorCallback(std::function<void()> fn);
+    //回调TcpServer::errorConnection()
+    void setHandleMessageCallback(std::function<void(std::string)> fn);
+    //发送数据, 内部保证Tcp发送缓冲区不会溢出
+    void send(const char* data, size_t size);
 };
 
 

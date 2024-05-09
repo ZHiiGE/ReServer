@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     printf("connect ok.\n");
     // printf("开始时间：%d\n",time(0));
 
-    for (int ii=0;ii<100;ii++)
+    for (int ii=0;ii<20;ii++)
     {
         memset(buf,0,sizeof(buf));
         sprintf(buf,"这是第%d个超级女生。",ii);
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
         send(sockfd,tmpbuf,len+4,0);  // 把请求报文发送给服务端。
     }
         
-    for (int ii=0;ii<100;ii++)
+    for (int ii=0;ii<20;ii++)
     {
         int len;
         recv(sockfd,&len,4,0);            // 先读取4字节的报文头部。

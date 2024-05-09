@@ -48,7 +48,8 @@ void TcpServer::handleMessage(Connection* conn, std::string message){
     int len = message.size();
     std::string tmp((char*)&len, 4);
     tmp.append(message);
-    send(conn->fd(), tmp.data(), tmp.size(), 0);
+    // send(conn->fd(), tmp.data(), tmp.size(), 0);
+    conn->send(tmp.data(), tmp.size());
 
     // m_outputbuffer.clear();
     // m_outputbuffer = m_inputbuffer;
