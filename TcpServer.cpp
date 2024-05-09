@@ -21,20 +21,22 @@ void TcpServer::newConnection(Socket* clientsock){
     Connection* Conn = new Connection(&m_evloop, clientsock);
     Conn->setCloseCallback(std::bind(&TcpServer::closeConnection, this, Conn));
     Conn->setErrorCallback(std::bind(&TcpServer::errorConnection, this, Conn));
-    //log accept
-    printf("accept: ip:%s port:%d\n", Conn->ip().c_str(), Conn->port());
+    //log new socket accept
+    printf("new socket accept: ip:%s port:%d\n", Conn->ip().c_str(), Conn->port());
 
     m_conns[Conn->fd()] = Conn;
 }
 
 //客户端关闭,在Connection类中回调该函数
 void TcpServer::closeConnection(Connection* conn){
+    //log close
     printf("client closed: %d\n", conn->fd());
     m_conns.erase(conn->fd());
     delete conn;
 }
 //客户端错误,在Connection类中回调该函数
 void TcpServer::errorConnection(Connection* conn){
+    //log error
     printf("error closed: %d\n", conn->fd());
     m_conns.erase(conn->fd());
     delete conn;

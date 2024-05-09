@@ -59,27 +59,6 @@ void Channel::handleEvent(){
     }
 }
 
-
-void Channel::onMessage(){
-    char buffer[1024];
-    while(true){
-        bzero(&buffer, sizeof(buffer));
-        ssize_t nread = read(m_fd, buffer, sizeof(buffer));
-        if(nread >0 ){//success
-            printf("recv(eventfd=%d):%s\n", m_fd ,buffer);
-            send(m_fd, buffer, strlen(buffer), 0);
-        }
-        else if(nread == -1 && errno == EINTR){//由信号中断 则继续读取
-            continue;
-        }
-        else if(nread == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))){//读取完毕
-            break;
-        }
-        else if(nread == 0){//客户端断开连接
-            m_closeCallback();
-        }
-    }
-}
 //设置读事件回调函数
 void Channel::setReadcallback(std::function<void()> fn){
     m_readCallback = fn;

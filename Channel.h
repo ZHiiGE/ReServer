@@ -38,7 +38,6 @@ public:
     uint32_t revents();
     void handleEvent();//事件处理函数,epoll_wait()中使用
 
-    void onMessage();
     void setReadcallback(std::function<void()> fn);//设置channel读事件回调函数,acceptor所属channel回调acceptor创建channel函数,connection所属channel回调onMessage()成员函数
     void setClosecallback(std::function<void()> fn);//设置channel连接关闭回调函数
     void setErrorcallback(std::function<void()> fn);//设置channel错误事件回调函数
