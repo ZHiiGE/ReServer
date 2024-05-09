@@ -18,7 +18,13 @@ Socket::~Socket(){
     ::close(m_fd);
 }
 
+void Socket::setIp(const std::string ip){
+    m_ip = ip;
+}
 
+void Socket::setPort(const uint16_t port){
+    m_port = port;
+}
 
 void Socket::setTcpnodelay(bool on){
     int optval = on ? 1 : 0;

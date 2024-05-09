@@ -29,6 +29,8 @@ public:
     int fd() const;
     std::string ip() const;
     uint16_t port() const;
+    void setIp(const std::string ip);   //设置socket的m_ip
+    void setPort(const  uint16_t port); //设置scoket的m_port
     
     void setReuseaddr(bool);//设置地址重使用,取消time_wait
     void setReuseport(bool);//设置端口重使用
