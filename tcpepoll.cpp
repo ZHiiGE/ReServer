@@ -1,4 +1,4 @@
-#include "TcpServer.h"
+#include "EchoServer.h"
 
 int main(int argc, char *argv[]){
     if (argc != 3) 
@@ -8,9 +8,9 @@ int main(int argc, char *argv[]){
         return -1; 
     }
 
-    TcpServer tcpserver(argv[1], atoi(argv[2]));
+    EchoServer server(argv[1], atoi(argv[2]));
 
-    tcpserver.start(10*1000);
+    server.start();
 
     return 0;
 }
