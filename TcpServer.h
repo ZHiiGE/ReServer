@@ -20,7 +20,7 @@ public:
     ~TcpServer();
 
     //启动事件循环
-    void start();
+    void start(int timeout = -1);
     //处理客户端新连接
     void newConnection(Socket* clientsock);
     //客户端关闭,在Connection类中回调该函数
@@ -29,6 +29,10 @@ public:
     void errorConnection(Connection* conn);
     //Connection类处理数据的调用函数
     void handleMessage(Connection* conn, std::string message);
+    //发送完成的回调函数
+    void sendComplete(Connection* conn);
+    //epoll_wait超时回调函数
+    void epollTimeout(EventLoop* evloop);
 };
 
 #endif

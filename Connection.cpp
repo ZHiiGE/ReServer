@@ -48,6 +48,10 @@ void Connection::setHandleMessageCallback(std::function<void(std::string)> fn){
     m_handleMessageCallback = fn;
 }
 
+void Connection::setSendCompleteCallback(std::function<void()> fn){
+    m_sendCompleteCallback = fn;
+}
+
 void Connection::onMessage(){
     char buffer[1024];
     while(true){
@@ -93,5 +97,6 @@ void Connection::writeCallback(){
     }
     if(m_outputbuffer.size() == 0){
         m_clientChannel->disablewriting();//发送完毕,取消监听写事件
+        m_sendCompleteCallback();
     }
 }

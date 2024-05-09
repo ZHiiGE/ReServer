@@ -8,12 +8,17 @@ EventLoop::~EventLoop(){
     delete m_ep;
 }
 
-void EventLoop::runLoop(){
+void EventLoop::runLoop(int timeout){
     while (true)
     {
-        std::vector<Channel*> chs = m_ep->loop();
-        for(auto& ch:chs){
-            ch->handleEvent();
+        std::vector<Channel*> chs = m_ep->loop(timeout);
+
+        if(chs.size()==0){//epoll_wait timeout
+            m_epollwaitTimeout(this);
+        }else{
+            for(auto& ch:chs){
+                ch->handleEvent();
+            }
         }
     }
     
@@ -22,4 +27,7 @@ void EventLoop::runLoop(){
 
 void EventLoop::updataChannel(Channel* ch){
     m_ep->updataChannel(ch);
+}
+void EventLoop::setEpollwaitTimeoutCallback(std::function<void(EventLoop*)> fn){
+    m_epollwaitTimeout = fn;
 }

@@ -10,7 +10,7 @@ int main(int argc, char *argv[]){
 
     TcpServer tcpserver(argv[1], atoi(argv[2]));
 
-    tcpserver.start();
+    tcpserver.start(10*1000);
 
     return 0;
 }

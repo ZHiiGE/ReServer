@@ -46,12 +46,15 @@ std::vector<Channel*> Epoll::loop(int timeout){
     int infds = epoll_wait(m_epollfd, m_events, MaxEvents, timeout);
 
     if(infds < 0){
-        //log error
+        //EBADF:epfd不是一个有效的描述符
+        //EFAULT:参数events指向的内存区域不可写
+        //EINVAL：epfd不是一个epoll文件描述符，或maxevents小于等于0
+        //EINTR：阻塞过程被信号中断，可以避免信号
         exit(-1);
     }
 
     if(infds == 0){
-        //log timeour
+        //log timeout
         return chs;
     }
 

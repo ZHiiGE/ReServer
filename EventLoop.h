@@ -1,6 +1,7 @@
 #ifndef _EVENTLOOP_H
 #define _EVENTLOOP_H
 
+#include <functional>
 #include "Epoll.h"
 // #include "Channel.h"
 /**
@@ -17,9 +18,12 @@ private:
 public:
     EventLoop();
     ~EventLoop();
+    std::function<void(EventLoop*)> m_epollwaitTimeout;
 
-    void runLoop();//运行事件循环
+    void runLoop(int timeout=-1);//运行事件循环
     void updataChannel(Channel* ch);
+    //设置epoll_wait超时回调函数
+    void setEpollwaitTimeoutCallback(std::function<void(EventLoop*)> fn);
 };
 
 #endif

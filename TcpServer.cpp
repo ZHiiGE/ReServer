@@ -1,6 +1,7 @@
 #include "TcpServer.h"
 
 TcpServer::TcpServer(const std::string& ip, const uint16_t &port){
+    m_evloop.setEpollwaitTimeoutCallback(std::bind(&TcpServer::epollTimeout, this, std::placeholders::_1));
     m_acceptor = new Acceptor(&m_evloop, ip, port);
     m_acceptor->setnewConnCallback(std::bind(&TcpServer::newConnection, this, std::placeholders::_1));
 }
@@ -12,8 +13,8 @@ TcpServer::~TcpServer(){
     }
 }
 
-void TcpServer::start(){
-    m_evloop.runLoop();
+void TcpServer::start(int timeout){
+    m_evloop.runLoop(timeout);
 }
 
 void TcpServer::newConnection(Socket* clientsock){
@@ -21,6 +22,7 @@ void TcpServer::newConnection(Socket* clientsock){
     Conn->setCloseCallback(std::bind(&TcpServer::closeConnection, this, Conn));
     Conn->setErrorCallback(std::bind(&TcpServer::errorConnection, this, Conn));
     Conn->setHandleMessageCallback(std::bind(&TcpServer::handleMessage, this, Conn, std::placeholders::_1));
+    Conn->setSendCompleteCallback(std::bind(&TcpServer::sendComplete, this, Conn));
     //log new socket accept
     printf("new socket accept: ip:%s port:%d\n", Conn->ip().c_str(), Conn->port());
 
@@ -48,11 +50,13 @@ void TcpServer::handleMessage(Connection* conn, std::string message){
     int len = message.size();
     std::string tmp((char*)&len, 4);
     tmp.append(message);
-    // send(conn->fd(), tmp.data(), tmp.size(), 0);
     conn->send(tmp.data(), tmp.size());
+}
 
-    // m_outputbuffer.clear();
-    // m_outputbuffer = m_inputbuffer;
-    // m_inputbuffer.clear();
-    // send(fd(), m_outputbuffer.data(),m_outputbuffer.size(),0);
+void TcpServer::sendComplete(Connection* conn){
+    printf("send completed\n");
+}
+
+void TcpServer::epollTimeout(EventLoop* evloop){
+    printf("eopll_wait timeout\n");
 }
