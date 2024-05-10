@@ -31,7 +31,7 @@ private:
 public:
     TcpServer();
     TcpServer(const std::string &ip, const uint16_t &port);
-    virtual ~TcpServer();
+    ~TcpServer();
 
     // //返回EventLoop
     // EventLoop evloop() const;
