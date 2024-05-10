@@ -13,18 +13,10 @@ EchoServer::~EchoServer(){
 
 }
 
-void EchoServer::handleMessage(Connection* conn, std::string message){
-    printf("message(eventfd=%d, ip=%s, port=%d):%s\n", conn->fd(), conn->ip().c_str(), conn->port() ,message.c_str());
-    message = "reply: " + message;
-    int len = message.size();
-    std::string tmp((char*)&len, 4);
-    tmp.append(message);
-    conn->send(tmp.data(), tmp.size());
-}
 
 //启动事件循环
-void EchoServer::start(int timeout = -1){
-    m_tcpserver.start();
+void EchoServer::start(int timeout){
+    m_tcpserver.start(timeout);
 }
 //处理客户端新连接
 void EchoServer::handleNewConnection(Connection* conn){

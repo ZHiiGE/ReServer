@@ -10,7 +10,7 @@ int main(int argc, char *argv[]){
 
     EchoServer server(argv[1], atoi(argv[2]));
 
-    server.start();
+    server.start(5*1000);
 
     return 0;
 }

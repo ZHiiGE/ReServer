@@ -9,11 +9,6 @@ TcpServer::TcpServer(const std::string& ip, const uint16_t &port){
 
 TcpServer::TcpServer():TcpServer("0.0.0.0", 8111){
 
-    m_acceptor->setnewConnCallback(std::bind(&TcpServer::handleNewConnection, this, std::placeholders::_1));
-}
-
-TcpServer::TcpServer():TcpServer("0.0.0.0", 8111){
-
 }
 
 TcpServer::~TcpServer(){
@@ -52,8 +47,6 @@ TcpServer::~TcpServer(){
 void TcpServer::start(int timeout){
     m_evloop.runLoop(timeout);
 }
-
-void TcpServer::handleNewConnection(Socket* clientsock){
 void TcpServer::handleNewConnection(Socket* clientsock){
     Connection* Conn = new Connection(&m_evloop, clientsock);
     Conn->setCloseCallback(std::bind(&TcpServer::handleCloseConnection, this, Conn));
@@ -72,8 +65,6 @@ void TcpServer::handleNewConnection(Socket* clientsock){
 }
 
 //客户端关闭,在Connection类中回调该函数
-void TcpServer::handleCloseConnection(Connection* conn){
-    if(m_closeconnectionCb) m_closeconnectionCb(conn);
 void TcpServer::handleCloseConnection(Connection* conn){
     if(m_closeconnectionCb) m_closeconnectionCb(conn);
     //log close

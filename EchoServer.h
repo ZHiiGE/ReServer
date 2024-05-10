@@ -6,7 +6,7 @@
  * @class:EchoServer
  * @brief:回显业务类
 */
-class EchoServer:public TcpServer{
+class EchoServer{
 private:
     TcpServer m_tcpserver;
 public:

@@ -49,7 +49,7 @@ public:
     //客户端错误,在Connection类中回调该函数
     void handleErrorConnection(Connection* conn);
     //Connection类处理数据的调用函数
-    virtual void handleMessage(Connection* conn, std::string message);
+    void handleMessage(Connection* conn, std::string message);
     //发送完成的回调函数
     void handleSendComplete(Connection* conn);
     //epoll_wait超时回调函数
