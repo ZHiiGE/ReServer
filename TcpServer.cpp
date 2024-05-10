@@ -6,6 +6,10 @@ TcpServer::TcpServer(const std::string& ip, const uint16_t &port){
     m_acceptor->setnewConnCallback(std::bind(&TcpServer::handleNewConnection, this, std::placeholders::_1));
 }
 
+TcpServer::TcpServer():TcpServer("0.0.0.0", 8111){
+
+}
+
 TcpServer::~TcpServer(){
     delete m_acceptor;
     for(auto &conn : m_conns){
@@ -40,10 +44,12 @@ void TcpServer::handleNewConnection(Socket* clientsock){
     printf("new socket accept: ip:%s port:%d\n", Conn->ip().c_str(), Conn->port());
 
     m_conns[Conn->fd()] = Conn;
+    if(m_newconnectionCb) m_newconnectionCb(Conn);
 }
 
 //客户端关闭,在Connection类中回调该函数
 void TcpServer::handleCloseConnection(Connection* conn){
+    if(m_closeconnectionCb) m_closeconnectionCb(conn);
     //log close
     printf("client closed: %d\n", conn->fd());
     m_conns.erase(conn->fd());
@@ -51,25 +57,23 @@ void TcpServer::handleCloseConnection(Connection* conn){
 }
 //客户端错误,在Connection类中回调该函数
 void TcpServer::handleErrorConnection(Connection* conn){
-    //log error
+<<<<<<< HEAD
+=======
+    if(m_errorconnectionCb) m_errorconnectionCb(conn);
     printf("error closed: %d\n", conn->fd());
-    m_conns.erase(conn->fd());
     delete conn;
 }
 
 void TcpServer::handleMessage(Connection* conn, std::string message){
-    printf("message(eventfd=%d, ip=%s, port=%d):%s\n", conn->fd(), conn->ip().c_str(), conn->port() ,message.c_str());
-    message = "reply: " + message;
-    int len = message.size();
-    std::string tmp((char*)&len, 4);
-    tmp.append(message);
-    conn->send(tmp.data(), tmp.size());
+    if(m_onmessageCb) m_onmessageCb(conn, message);
 }
 
 void TcpServer::handleSendComplete(Connection* conn){
     printf("send completed\n");
+    if(m_sendcompleteCb) m_sendcompleteCb(conn);
 }
 
 void TcpServer::handleEpollTimeout(EventLoop* evloop){
     printf("eopll_wait timeout\n");
+    if(m_timeoutCb)m_timeoutCb(evloop);
 }

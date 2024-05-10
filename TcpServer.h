@@ -15,7 +15,21 @@ private:
     EventLoop m_evloop;
     Acceptor* m_acceptor;
     std::map<int, Connection*> m_conns;
+
+    //回调具体业务类的newconnect
+    std::function<void(Connection*)> m_newconnectionCb;
+    //回调具体业务类的closeconnection
+    std::function<void(Connection*)> m_closeconnectionCb;
+    //回调具体业务类的errorconnect
+    std::function<void(Connection*)> m_errorconnectionCb;
+    //回调具体业务类的handleconnect
+    std::function<void(Connection*, std::string)> m_onmessageCb;
+    //回调具体业务类的sendcomplete
+    std::function<void(Connection*)> m_sendcompleteCb;
+    //回调具体业务类的timeout
+    std::function<void(EventLoop*)> m_timeoutCb;
 public:
+    TcpServer();
     TcpServer(const std::string &ip, const uint16_t &port);
     virtual ~TcpServer();
 
@@ -40,6 +54,27 @@ public:
     void handleSendComplete(Connection* conn);
     //epoll_wait超时回调函数
     void handleEpollTimeout(EventLoop* evloop);
+
+    //设置回调函数对象
+    void setNewconnectionCb(std::function<void(Connection*)> fn){
+        m_newconnectionCb = fn;
+    };
+    void setCloseconnectionCb(std::function<void(Connection*)> fn){
+        m_closeconnectionCb = fn;
+    };
+    void setErrorconnectionCb(std::function<void(Connection*)> fn){
+        m_errorconnectionCb = fn;
+    };
+    void setOnmessageCb(std::function<void(Connection*, std::string)> fn){
+        m_onmessageCb = fn;
+    };
+    void setSendcompleteCb(std::function<void(Connection*)> fn){
+        m_sendcompleteCb = fn;
+    };
+    void setTimeoutCb(std::function<void(EventLoop*)> fn){
+        m_timeoutCb = fn;
+    };
+
 };
 
 #endif
