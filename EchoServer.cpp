@@ -32,13 +32,10 @@ void EchoServer::handleErrorConnection(Connection* conn){
     std::cout<<"Conn Error !"<<std::endl;
 }
 //Connection类处理数据的调用函数
-void EchoServer::handleMessage(Connection* conn, std::string message){
+void EchoServer::handleMessage(Connection* conn, std::string& message){
     printf("message(eventfd=%d, ip=%s, port=%d):%s\n", conn->fd(), conn->ip().c_str(), conn->port() ,message.c_str());
     message = "reply: " + message;
-    int len = message.size();
-    std::string tmp((char*)&len, 4);
-    tmp.append(message);
-    conn->send(tmp.data(), tmp.size());
+    conn->send(message.data(), message.size());
 }
 //发送完成的回调函数
 void EchoServer::handleSendComplete(Connection* conn){

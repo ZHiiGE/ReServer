@@ -23,7 +23,7 @@ private:
     //回调具体业务类的errorconnect
     std::function<void(Connection*)> m_errorconnectionCb;
     //回调具体业务类的handleconnect
-    std::function<void(Connection*, std::string)> m_onmessageCb;
+    std::function<void(Connection*, std::string&)> m_onmessageCb;
     //回调具体业务类的sendcomplete
     std::function<void(Connection*)> m_sendcompleteCb;
     //回调具体业务类的timeout
@@ -49,7 +49,7 @@ public:
     //客户端错误,在Connection类中回调该函数
     void handleErrorConnection(Connection* conn);
     //Connection类处理数据的调用函数
-    void handleMessage(Connection* conn, std::string message);
+    void handleMessage(Connection* conn, std::string& message);
     //发送完成的回调函数
     void handleSendComplete(Connection* conn);
     //epoll_wait超时回调函数
@@ -65,7 +65,7 @@ public:
     void setErrorconnectionCb(std::function<void(Connection*)> fn){
         m_errorconnectionCb = fn;
     };
-    void setOnmessageCb(std::function<void(Connection*, std::string)> fn){
+    void setOnmessageCb(std::function<void(Connection*, std::string&)> fn){
         m_onmessageCb = fn;
     };
     void setSendcompleteCb(std::function<void(Connection*)> fn){

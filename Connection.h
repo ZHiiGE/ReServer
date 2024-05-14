@@ -18,13 +18,13 @@ private:
     Buffer m_outputbuffer;      //发送缓冲区
 
     //回调TcpServer::closeConnection()
-    std::function<void()> m_closeCallback;
+    std::function<void(Connection*)> m_closeCallback;
     //回调TcpServer::errorConnection()
-    std::function<void()> m_errorCallback;
+    std::function<void(Connection*)> m_errorCallback;
     //回调TcpServer::handleMessage()
-    std::function<void(std::string)> m_handleMessageCallback;
+    std::function<void(Connection*, std::string&)> m_handleMessageCallback;
     //回调TcpServer::sendComplete()
-    std::function<void()> m_sendCompleteCallback;
+    std::function<void(Connection*)> m_sendCompleteCallback;
 public:
     Connection(EventLoop* loop, Socket* clientsock);
     ~Connection();
@@ -42,13 +42,13 @@ public:
     //写事件处理 供channel回调
     void writeCallback();
     //设置回调TcpServer::closeConnection()
-    void setCloseCallback(std::function<void()> fn);
+    void setCloseCallback(std::function<void(Connection*)> fn);
     //设置回调TcpServer::errorConnection()
-    void setErrorCallback(std::function<void()> fn);
+    void setErrorCallback(std::function<void(Connection*)> fn);
     //设置回调TcpServer::errorConnection()
-    void setHandleMessageCallback(std::function<void(std::string)> fn);
+    void setHandleMessageCallback(std::function<void(Connection*, std::string&)> fn);
     //设置回调TcpServer::sendComplete()
-    void setSendCompleteCallback(std::function<void()> fn);
+    void setSendCompleteCallback(std::function<void(Connection*)> fn);
     //发送数据, 内部保证Tcp发送缓冲区不会溢出
     void send(const char* data, size_t size);
 };

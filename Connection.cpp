@@ -29,26 +29,26 @@ uint16_t Connection::port() const{
 }
 //供channel调用
 void Connection::closeCallback(){
-    m_closeCallback();
+    m_closeCallback(this);
 }
 //供channel调用
 void Connection::errorCallback(){
-    m_errorCallback();
+    m_errorCallback(this);
 }
 //设置回调函数CloseCallback为TcpServer::closeconnection
-void Connection::setCloseCallback(std::function<void()> fn){
+void Connection::setCloseCallback(std::function<void(Connection*)> fn){
     m_closeCallback = fn;
 }
 //设置回调函数errorCallback为TcpServer::ererorconnection
-void Connection::setErrorCallback(std::function<void()> fn){
+void Connection::setErrorCallback(std::function<void(Connection*)> fn){
     m_errorCallback = fn;
 }
 //设置回调函数handleMessageCallback为TcpServer::handleMessage
-void Connection::setHandleMessageCallback(std::function<void(std::string)> fn){
+void Connection::setHandleMessageCallback(std::function<void(Connection*, std::string&)> fn){
     m_handleMessageCallback = fn;
 }
 
-void Connection::setSendCompleteCallback(std::function<void()> fn){
+void Connection::setSendCompleteCallback(std::function<void(Connection*)> fn){
     m_sendCompleteCallback = fn;
 }
 
@@ -72,7 +72,7 @@ void Connection::onMessage(){
                 std::string message(m_inputbuffer.data()+4, len);//获取报文体
                 m_inputbuffer.erase(0, len+4);//从缓冲区中删除以获取报文
                 //数据处理
-                m_handleMessageCallback(message);//回调TcpServer::handleMessage()
+                m_handleMessageCallback(this, message);//回调TcpServer::handleMessage()
             }
 
             break;
@@ -85,7 +85,7 @@ void Connection::onMessage(){
 }
 
 void Connection::send(const char* data, size_t size){
-    m_outputbuffer.append(data, size);
+    m_outputbuffer.appendWithhead(data, size);
     m_clientChannel->enablewriting();
 }
 
@@ -97,6 +97,6 @@ void Connection::writeCallback(){
     }
     if(m_outputbuffer.size() == 0){
         m_clientChannel->disablewriting();//发送完毕,取消监听写事件
-        m_sendCompleteCallback();
+        m_sendCompleteCallback(this);
     }
 }

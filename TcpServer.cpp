@@ -53,7 +53,7 @@ void TcpServer::handleNewConnection(Socket* clientsock){
     Conn->setErrorCallback(std::bind(&TcpServer::handleErrorConnection, this, Conn));
     Conn->setCloseCallback(std::bind(&TcpServer::handleCloseConnection, this, Conn));
     Conn->setErrorCallback(std::bind(&TcpServer::handleErrorConnection, this, Conn));
-    Conn->setHandleMessageCallback(std::bind(&TcpServer::handleMessage, this, Conn, std::placeholders::_1));
+    Conn->setHandleMessageCallback(std::bind(&TcpServer::handleMessage, this, Conn, std::placeholders::_2));
     Conn->setSendCompleteCallback(std::bind(&TcpServer::handleSendComplete, this, Conn));
     Conn->setSendCompleteCallback(std::bind(&TcpServer::handleSendComplete, this, Conn));
     //log new socket accept
@@ -79,7 +79,7 @@ void TcpServer::handleErrorConnection(Connection* conn){
     delete conn;
 }
 
-void TcpServer::handleMessage(Connection* conn, std::string message){
+void TcpServer::handleMessage(Connection* conn, std::string& message){
     if(m_onmessageCb) m_onmessageCb(conn, message);
 }
 
