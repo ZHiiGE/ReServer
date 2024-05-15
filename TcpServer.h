@@ -4,7 +4,9 @@
 #include "EventLoop.h"
 #include "Acceptor.h"
 #include "Connection.h"
+#include "ThreadPool.h"
 #include <map>
+#include <vector>
 /**
  * @class:TcpServer
  * @brief:封装eventloop
@@ -12,7 +14,14 @@
 
 class TcpServer{
 private:
-    EventLoop m_evloop;
+    //主事件循环
+    EventLoop* m_mainloop;
+    //从事件循环
+    std::vector<EventLoop*> m_subloops;
+    //线程池
+    ThreadPool* m_threadpool;
+    //线程数量,即从时间循环个数
+    int m_threadsnum;
     Acceptor* m_acceptor;
     std::map<int, Connection*> m_conns;
 
@@ -30,7 +39,7 @@ private:
     std::function<void(EventLoop*)> m_timeoutCb;
 public:
     TcpServer();
-    TcpServer(const std::string &ip, const uint16_t &port);
+    TcpServer(const std::string &ip, const uint16_t &port, int threadsnum=3);
     ~TcpServer();
 
     // //返回EventLoop

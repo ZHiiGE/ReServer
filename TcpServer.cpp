@@ -1,10 +1,23 @@
 #include "TcpServer.h"
 
-TcpServer::TcpServer(const std::string& ip, const uint16_t &port){
-    m_evloop.setEpollwaitTimeoutCallback(std::bind(&TcpServer::handleEpollTimeout, this, std::placeholders::_1));
-    m_evloop.setEpollwaitTimeoutCallback(std::bind(&TcpServer::handleEpollTimeout, this, std::placeholders::_1));
-    m_acceptor = new Acceptor(&m_evloop, ip, port);
+TcpServer::TcpServer(const std::string& ip, const uint16_t &port, int threadsnum):m_threadsnum(threadsnum){
+    //创建主事件循环
+    m_mainloop = new EventLoop;
+    m_mainloop->setEpollwaitTimeoutCallback(std::bind(&TcpServer::handleEpollTimeout, this, std::placeholders::_1));
+
+    m_acceptor = new Acceptor(m_mainloop, ip, port);
     m_acceptor->setnewConnCallback(std::bind(&TcpServer::handleNewConnection, this, std::placeholders::_1));
+
+    //创建线程池
+    m_threadpool = new ThreadPool(m_threadsnum);            
+
+    //创建从事件循环
+    for(int ii = 0;ii<m_threadsnum;++ii){
+        m_subloops.push_back(new EventLoop);
+        m_subloops[ii]->setEpollwaitTimeoutCallback(std::bind(&TcpServer::handleEpollTimeout, this, std::placeholders::_1));
+        m_threadpool->addTask(std::bind(&EventLoop::runLoop, m_subloops[ii], -1));
+    }
+
 }
 
 TcpServer::TcpServer():TcpServer("0.0.0.0", 8111){
@@ -16,39 +29,21 @@ TcpServer::~TcpServer(){
     for(auto &conn : m_conns){
         delete conn.second;
     }
+    delete m_mainloop;
+    for(auto &loop:m_subloops){
+        delete loop;
+    }
+    delete m_threadpool;
 }
 
-//     //返回EventLoop
-// EventLoop TcpServer::evloop() const{
-//     return m_evloop;
-// }
-// //返回Acceptor
-// Acceptor* TcpServer::acceptor() const{
-//     return m_acceptor;
-// }
-//     //返回connections
-// std::map<int, Connection*> TcpServer::conns() const{
-//     return m_conns;
-// }
 
-//     //返回EventLoop
-// EventLoop TcpServer::evloop() const{
-//     return m_evloop;
-// }
-// //返回Acceptor
-// Acceptor* TcpServer::acceptor() const{
-//     return m_acceptor;
-// }
-//     //返回connections
-// std::map<int, Connection*> TcpServer::conns() const{
-//     return m_conns;
-// }
 
 void TcpServer::start(int timeout){
-    m_evloop.runLoop(timeout);
+    m_mainloop->runLoop(timeout);
 }
+
 void TcpServer::handleNewConnection(Socket* clientsock){
-    Connection* Conn = new Connection(&m_evloop, clientsock);
+    Connection* Conn = new Connection(m_subloops[clientsock->fd()%m_threadsnum], clientsock);
     Conn->setCloseCallback(std::bind(&TcpServer::handleCloseConnection, this, Conn));
     Conn->setErrorCallback(std::bind(&TcpServer::handleErrorConnection, this, Conn));
     Conn->setCloseCallback(std::bind(&TcpServer::handleCloseConnection, this, Conn));
@@ -60,7 +55,6 @@ void TcpServer::handleNewConnection(Socket* clientsock){
     printf("new socket accept: ip:%s port:%d\n", Conn->ip().c_str(), Conn->port());
 
     m_conns[Conn->fd()] = Conn;
-    if(m_newconnectionCb) m_newconnectionCb(Conn);
     if(m_newconnectionCb) m_newconnectionCb(Conn);
 }
 
@@ -84,11 +78,9 @@ void TcpServer::handleMessage(Connection* conn, std::string& message){
 }
 
 void TcpServer::handleSendComplete(Connection* conn){
-    printf("send completed\n");
     if(m_sendcompleteCb) m_sendcompleteCb(conn);
 }
 
 void TcpServer::handleEpollTimeout(EventLoop* evloop){
-    printf("eopll_wait timeout\n");
     if(m_timeoutCb)m_timeoutCb(evloop);
 }

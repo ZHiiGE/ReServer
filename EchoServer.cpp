@@ -20,7 +20,8 @@ void EchoServer::start(int timeout){
 }
 //处理客户端新连接
 void EchoServer::handleNewConnection(Connection* conn){
-    std::cout<<"new connection!"<<std::endl;
+    printf("NewConnection, thread is:%d\n", syscall(SYS_gettid));
+    // std::cout<<"new connection!"<<std::endl;
 
 }
 //客户端关闭,在Connection类中回调该函数
@@ -33,6 +34,8 @@ void EchoServer::handleErrorConnection(Connection* conn){
 }
 //Connection类处理数据的调用函数
 void EchoServer::handleMessage(Connection* conn, std::string& message){
+    printf("EchoServer::handleMessage, thread is:%d\n", syscall(SYS_gettid));
+
     printf("message(eventfd=%d, ip=%s, port=%d):%s\n", conn->fd(), conn->ip().c_str(), conn->port() ,message.c_str());
     message = "reply: " + message;
     conn->send(message.data(), message.size());
