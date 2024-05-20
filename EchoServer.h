@@ -2,6 +2,7 @@
 #define _ECHOSERVER_H
 
 #include "TcpServer.h"
+#include "ThreadPool.h"
 /**
  * @class:EchoServer
  * @brief:回显业务类
@@ -9,8 +10,11 @@
 class EchoServer{
 private:
     TcpServer m_tcpserver;
+    //工作业务线程池
+    ThreadPool m_threadpool;
+
 public:
-    EchoServer(const std::string &ip, const uint16_t &port);
+    EchoServer(const std::string &ip, const uint16_t &port, int loopthreadnums=3, int workthreadnums=5);
     ~EchoServer();
     
     //启动事件循环
@@ -27,5 +31,8 @@ public:
     void handleSendComplete(Connection* conn);
     //epoll_wait超时回调函数
     void handleEpollTimeout(EventLoop* evloop);
+
+    //具体业务, 在handleMessage中将其添加到线程池
+    void onMessage(Connection* conn, std::string& message);
 };
 #endif

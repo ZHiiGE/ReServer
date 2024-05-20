@@ -9,13 +9,13 @@ ThreadPool::ThreadPool():ThreadPool(2){
 
 }
 
-ThreadPool::ThreadPool(size_t threadsnum):m_threadnums(threadsnum), m_stop(false){
+ThreadPool::ThreadPool(size_t threadsnum, const std::string& type):m_threadnums(threadsnum), m_stop(false), m_type(type){
     //启动m_threadsnum数量的线程,并阻塞在等待条件变量处
     for(int ii=0;ii<m_threadnums;++ii){
 
         
         auto fn = [this](){
-            printf("create thread(%ld)\n", syscall(SYS_gettid));
+            printf("create %s thread(%ld)\n", this->m_type.c_str(), syscall(SYS_gettid));
             // std::cout << "子线程：" << std::this_thread::get_id() << std::endl;
 
             while (m_stop == false){
@@ -30,7 +30,7 @@ ThreadPool::ThreadPool(size_t threadsnum):m_threadnums(threadsnum), m_stop(false
                     task = std::move(this->m_taskqueue.front()); 
                     this->m_taskqueue.pop();
                 }
-                printf("thread(%ld) runing\n", syscall(SYS_gettid));
+                printf("%s thread(%ld) runing\n", this->m_type.c_str(), syscall(SYS_gettid));
                 task();
             }
             

@@ -8,8 +8,8 @@ TcpServer::TcpServer(const std::string& ip, const uint16_t &port, int threadsnum
     m_acceptor = new Acceptor(m_mainloop, ip, port);
     m_acceptor->setnewConnCallback(std::bind(&TcpServer::handleNewConnection, this, std::placeholders::_1));
 
-    //创建线程池
-    m_threadpool = new ThreadPool(m_threadsnum);            
+    //创建IO线程池
+    m_threadpool = new ThreadPool(m_threadsnum, "IO");            
 
     //创建从事件循环
     for(int ii = 0;ii<m_threadsnum;++ii){
