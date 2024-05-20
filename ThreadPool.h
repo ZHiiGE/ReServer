@@ -32,6 +32,7 @@ public:
     ThreadPool(size_t threadsnum, const std::string& type = "IO");
     ~ThreadPool();
 
+    size_t size(){return m_threads.size();}
     void addTask(std::function<void()> task);
 };
 

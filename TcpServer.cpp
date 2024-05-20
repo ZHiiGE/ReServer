@@ -3,7 +3,7 @@
 TcpServer::TcpServer(const std::string& ip, const uint16_t &port, int threadsnum)
             :m_threadsnum(threadsnum),
              m_mainloop(new EventLoop),
-             m_acceptor(m_mainloop, ip, port),
+             m_acceptor(m_mainloop.get(), ip, port),
              m_threadpool(m_threadsnum, "IO"){
     //创建主事件循环
     m_mainloop->setEpollwaitTimeoutCallback(std::bind(&TcpServer::handleEpollTimeout, this, std::placeholders::_1));
@@ -38,7 +38,7 @@ void TcpServer::start(int timeout){
 }
 
 void TcpServer::handleNewConnection(std::unique_ptr<Socket> clientsock){
-    std::shared_ptr<Connection> Conn(new Connection(m_subloops[clientsock->fd()%m_threadsnum], std::move(clientsock)));
+    std::shared_ptr<Connection> Conn(new Connection(m_subloops[clientsock->fd()%m_threadsnum].get(), std::move(clientsock)));
     Conn->setCloseCallback(std::bind(&TcpServer::handleCloseConnection, this, std::placeholders::_1));
     Conn->setErrorCallback(std::bind(&TcpServer::handleErrorConnection, this, std::placeholders::_1));
     Conn->setHandleMessageCallback(std::bind(&TcpServer::handleMessage, this, std::placeholders::_1, std::placeholders::_2));

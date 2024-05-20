@@ -1,6 +1,6 @@
 #include "Acceptor.h"
 
-Acceptor::Acceptor(const std::unique_ptr<EventLoop>& loop, const std::string &ip, const uint16_t &port)
+Acceptor::Acceptor(EventLoop* loop, const std::string &ip, const uint16_t &port)
                     :m_evloop(loop), 
                      m_servsock(createListensocket()),
                      m_acceptChannel(m_evloop, m_servsock.fd()){

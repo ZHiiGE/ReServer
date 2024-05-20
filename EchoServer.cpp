@@ -39,8 +39,15 @@ void EchoServer::handleErrorConnection(std::shared_ptr<Connection> conn){
 void EchoServer::handleMessage(std::shared_ptr<Connection> conn, std::string& message){
     // printf("message(eventfd=%d, ip=%s, port=%d):%s\n", conn->fd(), conn->ip().c_str(), conn->port() ,message.c_str());
     // printf("loop线程, thread is:%d\n", syscall(SYS_gettid));
-     //把业务添加到任务队列
-    m_threadpool.addTask(std::bind(&EchoServer::onMessage, this, conn, message));
+    if(m_threadpool.size() == 0) {
+        //当前在IO线程，如果没有工作线程，则直接在IO线程中处理数据
+        onMessage(conn, message);
+    }
+    else{//如果有工作线程，把业务添加到工作线程任务队列
+        m_threadpool.addTask(std::bind(&EchoServer::onMessage, this, conn, message));
+    }
+     
+    
    
 }
 

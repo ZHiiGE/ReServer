@@ -1,6 +1,6 @@
 #include "Connection.h"
 
-Connection::Connection(const std::unique_ptr<EventLoop>& loop, std::unique_ptr<Socket> clientsock)
+Connection::Connection(EventLoop* loop, std::unique_ptr<Socket> clientsock)
                 :m_loop(loop),
                  m_clientsock(std::move(clientsock)), 
                  m_clientChannel(new Channel(m_loop, m_clientsock->fd())), 
@@ -95,10 +95,21 @@ void Connection::send(const char* data, size_t size){
     if(m_disconnected == true){
         return;
     }
+    if(m_loop->isinLoopthread()){//判断当前线程是否是事件循环线程
+        //当前是IO线程
+        printf("在\n");
+        sendinLoop(data, size);
+    }else{
+        //当前不是IO线程
+        printf("不在\n");
+        m_loop->addTasktoqueue(std::bind(&Connection::sendinLoop, this, data, size));
+    }
+
+}
+void Connection::sendinLoop(const char* data, size_t size){
     m_outputbuffer.appendWithhead(data, size);
     m_clientChannel->enablewriting();
 }
-
 void Connection::writeCallback(){
     //尝试全部发送m_outputbuffer中的数据
     int write = ::send(fd(), m_outputbuffer.data(), m_outputbuffer.size(), 0);
