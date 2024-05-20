@@ -1,21 +1,24 @@
 #include "TcpServer.h"
 
-TcpServer::TcpServer(const std::string& ip, const uint16_t &port, int threadsnum):m_threadsnum(threadsnum){
+TcpServer::TcpServer(const std::string& ip, const uint16_t &port, int threadsnum)
+            :m_threadsnum(threadsnum),
+             m_mainloop(new EventLoop),
+             m_acceptor(m_mainloop, ip, port),
+             m_threadpool(m_threadsnum, "IO"){
     //创建主事件循环
-    m_mainloop = new EventLoop;
     m_mainloop->setEpollwaitTimeoutCallback(std::bind(&TcpServer::handleEpollTimeout, this, std::placeholders::_1));
 
-    m_acceptor = new Acceptor(m_mainloop, ip, port);
-    m_acceptor->setnewConnCallback(std::bind(&TcpServer::handleNewConnection, this, std::placeholders::_1));
+    ;
+    m_acceptor.setnewConnCallback(std::bind(&TcpServer::handleNewConnection, this, std::placeholders::_1));
 
     //创建IO线程池
-    m_threadpool = new ThreadPool(m_threadsnum, "IO");            
+    ;            
 
     //创建从事件循环
     for(int ii = 0;ii<m_threadsnum;++ii){
-        m_subloops.push_back(new EventLoop);
+        m_subloops.emplace_back(new EventLoop);
         m_subloops[ii]->setEpollwaitTimeoutCallback(std::bind(&TcpServer::handleEpollTimeout, this, std::placeholders::_1));
-        m_threadpool->addTask(std::bind(&EventLoop::runLoop, m_subloops[ii], -1));
+        m_threadpool.addTask(std::bind(&EventLoop::runLoop, m_subloops[ii].get(), -1));
     }
 
 }
@@ -25,13 +28,7 @@ TcpServer::TcpServer():TcpServer("0.0.0.0", 8111){
 }
 
 TcpServer::~TcpServer(){
-    delete m_acceptor;
-    delete m_mainloop;
 
-    for(auto &loop:m_subloops){
-        delete loop;
-    }
-    delete m_threadpool;
 }
 
 
@@ -40,8 +37,8 @@ void TcpServer::start(int timeout){
     m_mainloop->runLoop(timeout);
 }
 
-void TcpServer::handleNewConnection(Socket* clientsock){
-    std::shared_ptr<Connection> Conn(new Connection(m_subloops[clientsock->fd()%m_threadsnum], clientsock));
+void TcpServer::handleNewConnection(std::unique_ptr<Socket> clientsock){
+    std::shared_ptr<Connection> Conn(new Connection(m_subloops[clientsock->fd()%m_threadsnum], std::move(clientsock)));
     Conn->setCloseCallback(std::bind(&TcpServer::handleCloseConnection, this, std::placeholders::_1));
     Conn->setErrorCallback(std::bind(&TcpServer::handleErrorConnection, this, std::placeholders::_1));
     Conn->setHandleMessageCallback(std::bind(&TcpServer::handleMessage, this, std::placeholders::_1, std::placeholders::_2));
@@ -49,7 +46,7 @@ void TcpServer::handleNewConnection(Socket* clientsock){
     //log new socket accept
     printf("new socket accept: ip:%s port:%d\n", Conn->ip().c_str(), Conn->port());
 
-    // m_conns[Conn->fd()] = Conn;
+    m_conns[Conn->fd()] = Conn;
     if(m_newconnectionCb) m_newconnectionCb(Conn);
 }
 
@@ -69,7 +66,10 @@ void TcpServer::handleErrorConnection(std::shared_ptr<Connection> conn){
 }
 
 void TcpServer::handleMessage(std::shared_ptr<Connection> conn, std::string& message){
-    if(m_onmessageCb) m_onmessageCb(conn, message);
+    if(m_onmessageCb){
+        printf("message: %d\n", conn->fd());
+        m_onmessageCb(conn, message);
+    } 
 }
 
 void TcpServer::handleSendComplete(std::shared_ptr<Connection> conn){

@@ -5,6 +5,7 @@
 // #include "Epoll.h"
 #include "Socket.h"
 #include <functional>
+#include <memory>
 
 /**
  * @class:Channel类
@@ -16,7 +17,7 @@ class Channel{
 private:
     int m_fd = -1;//通道对应的socket描述符fd
     // Epoll* m_ep = nullptr;//对应的epoll描述符(红黑树)
-    EventLoop* m_evloop;//对应的epoll的事件循环
+    const std::unique_ptr<EventLoop>& m_evloop;//对应的epoll的事件循环
     bool m_inepoll = false;//是否加入epoll红黑树中
     uint32_t m_events = 0; //需要监视的事件
     uint32_t m_revents = 0;//已发生的事件
@@ -30,7 +31,7 @@ private:
     std::function<void()> m_errorCallback;
 
 public:
-    Channel(EventLoop* evloop, int fd);
+    Channel(const std::unique_ptr<EventLoop>& evloop, int fd);
     ~Channel();
 
     //返回socket对应的fd

@@ -1,6 +1,7 @@
 #include "Channel.h"
 #include "Connection.h"
-Channel::Channel(EventLoop* evloop, int fd):m_evloop(evloop), m_fd(fd){
+Channel::Channel(const std::unique_ptr<EventLoop>& evloop, int fd)
+            :m_evloop(evloop), m_fd(fd){
     
 };
 Channel::~Channel(){

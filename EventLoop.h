@@ -3,6 +3,7 @@
 
 #include <functional>
 #include "Epoll.h"
+#include <memory>
 // #include "Channel.h"
 /**
  * @class:EventLoop
@@ -14,7 +15,7 @@ class Channel;
 
 class EventLoop{
 private:
-    Epoll *m_ep = nullptr;
+    std::unique_ptr<Epoll> m_ep;
 public:
     EventLoop();
     ~EventLoop();

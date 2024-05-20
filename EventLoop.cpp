@@ -1,12 +1,12 @@
 #include "EventLoop.h"
 #include "sys/syscall.h"
 #include "unistd.h"
-EventLoop::EventLoop():m_ep(new Epoll()){
+EventLoop::EventLoop():m_ep(new Epoll){
 
 }
 
 EventLoop::~EventLoop(){
-    delete m_ep;
+
 }
 
 void EventLoop::runLoop(int timeout){

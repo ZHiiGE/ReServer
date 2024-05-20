@@ -48,8 +48,6 @@ void EchoServer::handleMessage(std::shared_ptr<Connection> conn, std::string& me
 void EchoServer::onMessage(std::shared_ptr<Connection> conn, std::string& message){
     // printf("task线程, thread is:%d\n", syscall(SYS_gettid));
     message = "reply: " + message;
-    sleep(6);
-    printf("处理完业务后，将使用connecion对象。\n");
     conn->send(message.data(), message.size());
 }
 

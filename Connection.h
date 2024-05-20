@@ -13,9 +13,11 @@
 class Connection:public std::enable_shared_from_this<Connection>
 {
 private:
-    EventLoop* m_loop;          //对应事件循环
-    Socket* m_clientsock;       //对应连接Socket
-    Channel* m_clientChannel;   //对应连接Channel
+    const std::unique_ptr<EventLoop>& m_loop;          //对应事件循环
+    //对应连接Socket
+    std::unique_ptr<Socket> m_clientsock;
+    //对应连接Channel
+    std::unique_ptr<Channel> m_clientChannel;   
     Buffer m_inputbuffer;       //接收缓冲区
     Buffer m_outputbuffer;      //发送缓冲区
     std::atomic_bool m_disconnected; //连接是否已断开
@@ -29,7 +31,7 @@ private:
     //回调TcpServer::sendComplete()
     std::function<void(std::shared_ptr<Connection>)> m_sendCompleteCallback;
 public:
-    Connection(EventLoop* loop, Socket* clientsock);
+    Connection(const std::unique_ptr<EventLoop>& loop, std::unique_ptr<Socket> clientsock);
     ~Connection();
 
     int fd() const;

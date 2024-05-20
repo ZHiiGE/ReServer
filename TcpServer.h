@@ -15,14 +15,17 @@
 class TcpServer{
 private:
     //主事件循环
-    EventLoop* m_mainloop;
+    std::unique_ptr<EventLoop> m_mainloop;
     //从事件循环
-    std::vector<EventLoop*> m_subloops;
-    //线程池
-    ThreadPool* m_threadpool;
+    std::vector<std::unique_ptr<EventLoop>> m_subloops;
+
     //线程数量,即从时间循环个数
     int m_threadsnum;
-    Acceptor* m_acceptor;
+    //线程池
+    ThreadPool m_threadpool;
+
+
+    Acceptor m_acceptor;
     std::map<int, std::shared_ptr<Connection>> m_conns;
 
     //回调具体业务类的newconnect
@@ -52,7 +55,7 @@ public:
     //启动事件循环
     void start(int timeout = -1);
     //处理客户端新连接
-    void handleNewConnection(Socket* clientsock);
+    void handleNewConnection(std::unique_ptr<Socket> clientsock);
     //客户端关闭,在Connection类中回调该函数
     void handleCloseConnection(std::shared_ptr<Connection> conn);
     //客户端错误,在Connection类中回调该函数

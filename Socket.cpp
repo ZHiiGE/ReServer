@@ -11,11 +11,12 @@ int createListensocket(){
 }
 
 Socket::Socket(int fd):m_fd(fd){
-    // printf("copy construct\n");
+    printf("Socket construct\n");
 };
 
 Socket::~Socket(){
     ::close(m_fd);
+    printf("Socket destruct\n");
 }
 
 void Socket::setIp(const std::string ip){

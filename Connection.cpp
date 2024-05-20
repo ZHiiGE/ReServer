@@ -1,8 +1,11 @@
 #include "Connection.h"
 
-Connection::Connection(EventLoop* loop, Socket* clientsock):m_loop(loop), m_clientsock(clientsock), m_disconnected(false){
+Connection::Connection(const std::unique_ptr<EventLoop>& loop, std::unique_ptr<Socket> clientsock)
+                :m_loop(loop),
+                 m_clientsock(std::move(clientsock)), 
+                 m_clientChannel(new Channel(m_loop, m_clientsock->fd())), 
+                 m_disconnected(false){
 
-    m_clientChannel = new Channel(m_loop, clientsock->fd());
     m_clientChannel->setReadcallback(std::bind(&Connection::onMessage, this));          //读事件回调对应connection的onMessage
     m_clientChannel->setWritecallback(std::bind(&Connection::writeCallback, this));     //读事件回调对应connection的onMessage
     m_clientChannel->setClosecallback(std::bind(&Connection::closeCallback, this));     //关闭事件回调对应connection的clossCallback
@@ -12,9 +15,7 @@ Connection::Connection(EventLoop* loop, Socket* clientsock):m_loop(loop), m_clie
 }
 
 Connection::~Connection(){
-    delete m_clientsock;
-    delete m_clientChannel;
-    printf("Connection对象已析构。\n");
+
 }
 
 int Connection::fd() const {
@@ -77,6 +78,7 @@ void Connection::onMessage(){
                 std::string message(m_inputbuffer.data()+4, len);//获取报文体
                 m_inputbuffer.erase(0, len+4);//从缓冲区中删除以获取报文
                 //数据处理
+                printf("message (eventfd=%d):%s\n",fd(),message.c_str());
                 m_handleMessageCallback(shared_from_this(), message);//回调TcpServer::handleMessage()
             }
 
@@ -91,7 +93,6 @@ void Connection::onMessage(){
 
 void Connection::send(const char* data, size_t size){
     if(m_disconnected == true){
-        printf("客户端已关闭，不再发送数据\n");
         return;
     }
     m_outputbuffer.appendWithhead(data, size);
