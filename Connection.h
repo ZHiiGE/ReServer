@@ -3,12 +3,14 @@
 
 #include "EventLoop.h"
 #include "Buffer.h"
+#include <memory>
+#include <atomic>
 /**
  * @class:Connection
  * @brief:封装客户端连接进行消息传递的Channel类
 */
 
-class Connection
+class Connection:public std::enable_shared_from_this<Connection>
 {
 private:
     EventLoop* m_loop;          //对应事件循环
@@ -16,15 +18,16 @@ private:
     Channel* m_clientChannel;   //对应连接Channel
     Buffer m_inputbuffer;       //接收缓冲区
     Buffer m_outputbuffer;      //发送缓冲区
+    std::atomic_bool m_disconnected; //连接是否已断开
 
     //回调TcpServer::closeConnection()
-    std::function<void(Connection*)> m_closeCallback;
+    std::function<void(std::shared_ptr<Connection>)> m_closeCallback;
     //回调TcpServer::errorConnection()
-    std::function<void(Connection*)> m_errorCallback;
+    std::function<void(std::shared_ptr<Connection>)> m_errorCallback;
     //回调TcpServer::handleMessage()
-    std::function<void(Connection*, std::string&)> m_handleMessageCallback;
+    std::function<void(std::shared_ptr<Connection>, std::string&)> m_handleMessageCallback;
     //回调TcpServer::sendComplete()
-    std::function<void(Connection*)> m_sendCompleteCallback;
+    std::function<void(std::shared_ptr<Connection>)> m_sendCompleteCallback;
 public:
     Connection(EventLoop* loop, Socket* clientsock);
     ~Connection();
@@ -42,13 +45,13 @@ public:
     //写事件处理 供channel回调
     void writeCallback();
     //设置回调TcpServer::closeConnection()
-    void setCloseCallback(std::function<void(Connection*)> fn);
+    void setCloseCallback(std::function<void(std::shared_ptr<Connection>)> fn);
     //设置回调TcpServer::errorConnection()
-    void setErrorCallback(std::function<void(Connection*)> fn);
+    void setErrorCallback(std::function<void(std::shared_ptr<Connection>)> fn);
     //设置回调TcpServer::errorConnection()
-    void setHandleMessageCallback(std::function<void(Connection*, std::string&)> fn);
+    void setHandleMessageCallback(std::function<void(std::shared_ptr<Connection>, std::string&)> fn);
     //设置回调TcpServer::sendComplete()
-    void setSendCompleteCallback(std::function<void(Connection*)> fn);
+    void setSendCompleteCallback(std::function<void(std::shared_ptr<Connection>)> fn);
     //发送数据, 内部保证Tcp发送缓冲区不会溢出
     void send(const char* data, size_t size);
 };

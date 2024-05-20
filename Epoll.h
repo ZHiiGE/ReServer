@@ -30,6 +30,8 @@ public:
     ~Epoll();
 
     void updataChannel(Channel* ch);
+    //删除某个channel
+    void removeChannel(Channel* ch);
     std::vector<Channel*> loop(int timeout = -1);
     // int epollfd();
 };

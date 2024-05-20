@@ -20,19 +20,19 @@ public:
     //启动事件循环
     void start(int timeout = -1);
     //处理客户端新连接
-    void handleNewConnection(Connection* conn);
+    void handleNewConnection(std::shared_ptr<Connection> conn);
     //客户端关闭,在Connection类中回调该函数
-    void handleCloseConnection(Connection* conn);
+    void handleCloseConnection(std::shared_ptr<Connection> conn);
     //客户端错误,在Connection类中回调该函数
-    void handleErrorConnection(Connection* conn);
+    void handleErrorConnection(std::shared_ptr<Connection> conn);
     //Connection类处理数据的调用函数
-    void handleMessage(Connection* conn, std::string& message);
+    void handleMessage(std::shared_ptr<Connection> conn, std::string& message);
     //发送完成的回调函数
-    void handleSendComplete(Connection* conn);
+    void handleSendComplete(std::shared_ptr<Connection> conn);
     //epoll_wait超时回调函数
     void handleEpollTimeout(EventLoop* evloop);
 
     //具体业务, 在handleMessage中将其添加到线程池
-    void onMessage(Connection* conn, std::string& message);
+    void onMessage(std::shared_ptr<Connection> conn, std::string& message);
 };
 #endif

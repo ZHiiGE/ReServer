@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 
         send(sockfd,tmpbuf,len+4,0);  // 把请求报文发送给服务端。
     }
-        
+        sleep(2);return 0;
     for (int ii=0;ii<1;ii++)
     {
         int len;

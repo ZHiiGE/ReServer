@@ -22,21 +22,21 @@ void EchoServer::start(int timeout){
     m_tcpserver.start(timeout);
 }
 //处理客户端新连接
-void EchoServer::handleNewConnection(Connection* conn){
+void EchoServer::handleNewConnection(std::shared_ptr<Connection> conn){
     // printf("NewConnection, thread is:%d\n", syscall(SYS_gettid));
     std::cout<<"new connection!"<<std::endl;
 
 }
 //客户端关闭,在Connection类中回调该函数
-void EchoServer::handleCloseConnection(Connection* conn){
+void EchoServer::handleCloseConnection(std::shared_ptr<Connection> conn){
     std::cout<<"Conn Closed !"<<std::endl;
 }
 //客户端错误,在Connection类中回调该函数
-void EchoServer::handleErrorConnection(Connection* conn){
+void EchoServer::handleErrorConnection(std::shared_ptr<Connection> conn){
     std::cout<<"Conn Error !"<<std::endl;
 }
 //Connection类处理数据的调用函数
-void EchoServer::handleMessage(Connection* conn, std::string& message){
+void EchoServer::handleMessage(std::shared_ptr<Connection> conn, std::string& message){
     // printf("message(eventfd=%d, ip=%s, port=%d):%s\n", conn->fd(), conn->ip().c_str(), conn->port() ,message.c_str());
     // printf("loop线程, thread is:%d\n", syscall(SYS_gettid));
      //把业务添加到任务队列
@@ -45,14 +45,16 @@ void EchoServer::handleMessage(Connection* conn, std::string& message){
 }
 
 //具体业务
-void EchoServer::onMessage(Connection* conn, std::string& message){
+void EchoServer::onMessage(std::shared_ptr<Connection> conn, std::string& message){
     // printf("task线程, thread is:%d\n", syscall(SYS_gettid));
     message = "reply: " + message;
+    sleep(6);
+    printf("处理完业务后，将使用connecion对象。\n");
     conn->send(message.data(), message.size());
 }
 
 //发送完成的回调函数
-void EchoServer::handleSendComplete(Connection* conn){
+void EchoServer::handleSendComplete(std::shared_ptr<Connection> conn){
     std::cout<<"Send completed !"<<std::endl;
 }
 //epoll_wait超时回调函数

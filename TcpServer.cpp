@@ -26,10 +26,8 @@ TcpServer::TcpServer():TcpServer("0.0.0.0", 8111){
 
 TcpServer::~TcpServer(){
     delete m_acceptor;
-    for(auto &conn : m_conns){
-        delete conn.second;
-    }
     delete m_mainloop;
+
     for(auto &loop:m_subloops){
         delete loop;
     }
@@ -43,41 +41,38 @@ void TcpServer::start(int timeout){
 }
 
 void TcpServer::handleNewConnection(Socket* clientsock){
-    Connection* Conn = new Connection(m_subloops[clientsock->fd()%m_threadsnum], clientsock);
-    Conn->setCloseCallback(std::bind(&TcpServer::handleCloseConnection, this, Conn));
-    Conn->setErrorCallback(std::bind(&TcpServer::handleErrorConnection, this, Conn));
-    Conn->setCloseCallback(std::bind(&TcpServer::handleCloseConnection, this, Conn));
-    Conn->setErrorCallback(std::bind(&TcpServer::handleErrorConnection, this, Conn));
-    Conn->setHandleMessageCallback(std::bind(&TcpServer::handleMessage, this, Conn, std::placeholders::_2));
-    Conn->setSendCompleteCallback(std::bind(&TcpServer::handleSendComplete, this, Conn));
-    Conn->setSendCompleteCallback(std::bind(&TcpServer::handleSendComplete, this, Conn));
+    std::shared_ptr<Connection> Conn(new Connection(m_subloops[clientsock->fd()%m_threadsnum], clientsock));
+    Conn->setCloseCallback(std::bind(&TcpServer::handleCloseConnection, this, std::placeholders::_1));
+    Conn->setErrorCallback(std::bind(&TcpServer::handleErrorConnection, this, std::placeholders::_1));
+    Conn->setHandleMessageCallback(std::bind(&TcpServer::handleMessage, this, std::placeholders::_1, std::placeholders::_2));
+    Conn->setSendCompleteCallback(std::bind(&TcpServer::handleSendComplete, this, std::placeholders::_1));
     //log new socket accept
     printf("new socket accept: ip:%s port:%d\n", Conn->ip().c_str(), Conn->port());
 
-    m_conns[Conn->fd()] = Conn;
+    // m_conns[Conn->fd()] = Conn;
     if(m_newconnectionCb) m_newconnectionCb(Conn);
 }
 
 //客户端关闭,在Connection类中回调该函数
-void TcpServer::handleCloseConnection(Connection* conn){
+void TcpServer::handleCloseConnection(std::shared_ptr<Connection> conn){
     if(m_closeconnectionCb) m_closeconnectionCb(conn);
     //log close
-    printf("client closed: %d\n", conn->fd());
+    // printf("client closed: %d\n", conn->fd());
     m_conns.erase(conn->fd());
-    delete conn;
 }
 //客户端错误,在Connection类中回调该函数
-void TcpServer::handleErrorConnection(Connection* conn){
+void TcpServer::handleErrorConnection(std::shared_ptr<Connection> conn){
+    if(m_errorconnectionCb) m_errorconnectionCb(conn);
     //log error
     printf("error closed: %d\n", conn->fd());
-    delete conn;
+    m_conns.erase(conn->fd());
 }
 
-void TcpServer::handleMessage(Connection* conn, std::string& message){
+void TcpServer::handleMessage(std::shared_ptr<Connection> conn, std::string& message){
     if(m_onmessageCb) m_onmessageCb(conn, message);
 }
 
-void TcpServer::handleSendComplete(Connection* conn){
+void TcpServer::handleSendComplete(std::shared_ptr<Connection> conn){
     if(m_sendcompleteCb) m_sendcompleteCb(conn);
 }
 

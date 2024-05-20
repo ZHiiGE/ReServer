@@ -24,6 +24,8 @@ public:
     void updataChannel(Channel* ch);
     //设置epoll_wait超时回调函数
     void setEpollwaitTimeoutCallback(std::function<void(EventLoop*)> fn);
+    //从epoll红黑树中删除一个channel
+    void removeChannel(Channel*);
 };
 
 #endif

@@ -35,9 +35,19 @@ void Epoll::updataChannel(Channel* ch){
         }
         ch->setInepoll();
     }
-
-
 }
+
+//删除Channel
+void Epoll::removeChannel(Channel* ch){
+    if(ch->inEopll()){//如果channel在红黑树中 则删除
+        if(epoll_ctl(m_epollfd, EPOLL_CTL_DEL, ch->fd(), 0)==-1){
+            perror("epoll_ctl error");
+            exit(-1);
+        }
+        printf("remove channel\n");
+    }
+}
+
 //运行epoll_wait(),等待事件
 std::vector<Channel*> Epoll::loop(int timeout){
     std::vector<Channel* > chs;

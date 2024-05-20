@@ -36,6 +36,17 @@ void Channel::disablewriting(){
     m_events &= ~EPOLLOUT;
     m_evloop->updataChannel(this);
 }
+//取消所有事件
+void Channel::disableAll(){
+    m_events = 0;
+    m_evloop->updataChannel(this);
+}
+//从事件循环中删除channel
+void Channel::remove(){
+    disableAll();                   //取消全部事件
+    m_evloop->removeChannel(this);  //从epoll红黑树中删除该channel
+
+}
 //m_inepoll为true
 void Channel::setInepoll(){
     m_inepoll = true;

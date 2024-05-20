@@ -45,6 +45,10 @@ public:
     void enablewriting();
     //让epoll_wait()取消监听m_fd的写事件
     void disablewriting();
+    //取消所有事件
+    void disableAll();
+    //从epoll时间循环中删除channel
+    void remove();
     void setInepoll();//m_inepoll为true;
     void setRevents(uint32_t ev);//m_revent为ev
     bool inEopll();

@@ -32,3 +32,6 @@ void EventLoop::updataChannel(Channel* ch){
 void EventLoop::setEpollwaitTimeoutCallback(std::function<void(EventLoop*)> fn){
     m_epollwaitTimeout = fn;
 }
+void EventLoop::removeChannel(Channel* ch){
+    m_ep->removeChannel(ch);
+}
