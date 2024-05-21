@@ -7,12 +7,7 @@ TcpServer::TcpServer(const std::string& ip, const uint16_t &port, int threadsnum
              m_threadpool(m_threadsnum, "IO"){
     //创建主事件循环
     m_mainloop->setEpollwaitTimeoutCallback(std::bind(&TcpServer::handleEpollTimeout, this, std::placeholders::_1));
-
-    ;
     m_acceptor.setnewConnCallback(std::bind(&TcpServer::handleNewConnection, this, std::placeholders::_1));
-
-    //创建IO线程池
-    ;            
 
     //创建从事件循环
     for(int ii = 0;ii<m_threadsnum;++ii){

@@ -26,7 +26,6 @@ Acceptor::~Acceptor()
 void Acceptor::newConnection(){
     InetAddress clientaddr;
 
-    //传给对应Connection类,在Connection析构中释放
     std::unique_ptr<Socket> clientsock(new Socket(m_servsock.accept(clientaddr)));
     clientsock->setIp(clientaddr.ip());
     clientsock->setPort(clientaddr.port());

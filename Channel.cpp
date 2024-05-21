@@ -73,15 +73,15 @@ uint32_t Channel::revents(){
 //事件处理函数,epoll_wait()返回调用
 void Channel::handleEvent(){
     if(m_revents & EPOLLRDHUP){//对方已关闭 好像读不到
-        // printf("EPOLLRDHUP\n");
+        printf("EPOLLRDHUP\n");
         m_closeCallback();
     }
-    else if(m_revents & (EPOLLIN|EPOLLPRI)){ //缓冲区由数据可读
-        // printf("EPOLLIN\n");
+    else if(m_revents & (EPOLLIN|EPOLLPRI)){ //缓冲区有数据可读
+        printf("EPOLLIN: %d\n",m_fd);
         m_readCallback();
     }
     else if(m_revents & EPOLLOUT){//写事件
-        // printf("EPOLLOUT\n");
+        printf("EPOLLOUT\n");
         m_writeCallback();
     }
     else{//其他事件视为错误

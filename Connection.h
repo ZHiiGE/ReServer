@@ -5,6 +5,7 @@
 #include "Buffer.h"
 #include <memory>
 #include <atomic>
+#include "Timestamp.h"
 /**
  * @class:Connection
  * @brief:封装客户端连接进行消息传递的Channel类
@@ -30,6 +31,9 @@ private:
     std::function<void(std::shared_ptr<Connection>, std::string&)> m_handleMessageCallback;
     //回调TcpServer::sendComplete()
     std::function<void(std::shared_ptr<Connection>)> m_sendCompleteCallback;
+
+    //时间戳类
+    Timestamp m_lasttime;
 public:
     Connection(EventLoop* loop, std::unique_ptr<Socket> clientsock);
     ~Connection();
@@ -56,7 +60,10 @@ public:
     void setSendCompleteCallback(std::function<void(std::shared_ptr<Connection>)> fn);
     //发送数据, 内部保证Tcp发送缓冲区不会溢出
     void send(const char* data, size_t size);
+    //在IO线程中
     void sendinLoop(const char* data, size_t size);
+    //不在IO线程中
+    void sendinLoop(const std::shared_ptr<char[]> data, size_t size);
 };
 
 

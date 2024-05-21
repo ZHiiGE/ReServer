@@ -78,8 +78,11 @@ void Connection::onMessage(){
                 std::string message(m_inputbuffer.data()+4, len);//获取报文体
                 m_inputbuffer.erase(0, len+4);//从缓冲区中删除以获取报文
                 //数据处理
+                m_lasttime = Timestamp::now();
+                std::cout<<m_lasttime.tostring()<<std::endl;
                 printf("message (eventfd=%d):%s\n",fd(),message.c_str());
                 m_handleMessageCallback(shared_from_this(), message);//回调TcpServer::handleMessage()
+
             }
 
             break;
@@ -97,17 +100,23 @@ void Connection::send(const char* data, size_t size){
     }
     if(m_loop->isinLoopthread()){//判断当前线程是否是事件循环线程
         //当前是IO线程
-        printf("在\n");
+        printf("不在\n");
         sendinLoop(data, size);
     }else{
         //当前不是IO线程
         printf("不在\n");
-        m_loop->addTasktoqueue(std::bind(&Connection::sendinLoop, this, data, size));
+        std::shared_ptr<char[]> Cstr(new char[size+1], [](char* p){delete []p;});
+        strcpy(Cstr.get(), data);
+        m_loop->addTasktoqueue(std::bind((void(Connection::*)(const std::shared_ptr<char[]> data, size_t size))&Connection::sendinLoop, this, Cstr, size));
     }
 
 }
 void Connection::sendinLoop(const char* data, size_t size){
     m_outputbuffer.appendWithhead(data, size);
+    m_clientChannel->enablewriting();
+}
+void Connection::sendinLoop(const std::shared_ptr<char[]> data, size_t size){
+    m_outputbuffer.appendWithhead(data.get(), size);
     m_clientChannel->enablewriting();
 }
 void Connection::writeCallback(){
