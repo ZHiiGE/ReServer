@@ -64,6 +64,8 @@ public:
     void sendinLoop(const char* data, size_t size);
     //不在IO线程中
     void sendinLoop(const std::shared_ptr<char[]> data, size_t size);
+    //判断是否长时间无消息
+    bool timeOut(time_t now, int val=10);
 };
 
 

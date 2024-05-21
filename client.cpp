@@ -36,11 +36,11 @@ int main(int argc, char *argv[])
 
     printf("connect ok.\n");
     // printf("开始时间：%d\n",time(0));
-
-    for (int ii=0;ii<100;ii++)
+sleep(1000);
+    for (int ii=0;ii<10;ii++)
     {
         memset(buf,0,sizeof(buf));
-        sprintf(buf,"这是第%d个超级女生。这是第6个超级女生。这是第6个超级女生。这是第6个超级女生。这是第6个超级女生。",ii);
+        sprintf(buf,"这是第%d个超级女生。",ii);
 
         char tmpbuf[1024];                 // 临时的buffer，报文头部+报文内容。
         memset(tmpbuf,0,sizeof(tmpbuf));
@@ -48,20 +48,16 @@ int main(int argc, char *argv[])
         memcpy(tmpbuf,&len,4);       // 拼接报文头部。
         memcpy(tmpbuf+4,buf,len);  // 拼接报文内容。
 
-        send(sockfd,tmpbuf,len+4,0); 
-        sleep(1); // 把请求报文发送给服务端。
-    }
-
-    for (int ii=0;ii<100;ii++)
-    {
-        int len;
+        send(sockfd,tmpbuf,len+4,0);  // 把请求报文发送给服务端。
+        
         recv(sockfd,&len,4,0);            // 先读取4字节的报文头部。
 
         memset(buf,0,sizeof(buf));
         recv(sockfd,buf,len,0);           // 读取报文内容。
 
         printf("recv:%s\n",buf);
+sleep(1);
     }
-    sleep(100);
+
     // printf("结束时间：%d\n",time(0));
 } 

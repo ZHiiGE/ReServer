@@ -26,6 +26,8 @@ private:
 
 
     Acceptor m_acceptor;
+    //m_conns的互斥锁
+    std::mutex m_mutex;
     std::map<int, std::shared_ptr<Connection>> m_conns;
 
     //回调具体业务类的newconnect
@@ -86,6 +88,8 @@ public:
     void setTimeoutCb(std::function<void(EventLoop*)> fn){
         m_timeoutCb = fn;
     };
+    //删除map中的conn
+    void removeConn(int fd);
 
 };
 

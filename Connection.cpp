@@ -15,7 +15,7 @@ Connection::Connection(EventLoop* loop, std::unique_ptr<Socket> clientsock)
 }
 
 Connection::~Connection(){
-
+    std::cout<<"析构："<<std::endl;
 }
 
 int Connection::fd() const {
@@ -119,7 +119,12 @@ void Connection::sendinLoop(const std::shared_ptr<char[]> data, size_t size){
     m_outputbuffer.appendWithhead(data.get(), size);
     m_clientChannel->enablewriting();
 }
-void Connection::writeCallback(){
+bool Connection::timeOut(time_t now, int val)
+{
+        return (now-m_lasttime.toint()) > val;
+}
+void Connection::writeCallback()
+{
     //尝试全部发送m_outputbuffer中的数据
     int write = ::send(fd(), m_outputbuffer.data(), m_outputbuffer.size(), 0);
     if(write>0){
