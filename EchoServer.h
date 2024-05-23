@@ -19,6 +19,8 @@ public:
     
     //启动事件循环
     void start(int timeout = -1);
+    //停止服务器
+    void stop();
     //处理客户端新连接
     void handleNewConnection(std::shared_ptr<Connection> conn);
     //客户端关闭,在Connection类中回调该函数

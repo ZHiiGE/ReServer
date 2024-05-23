@@ -56,6 +56,8 @@ public:
     
     //启动事件循环
     void start(int timeout = -1);
+    //停止IO事件循环
+    void stop();
     //处理客户端新连接
     void handleNewConnection(std::unique_ptr<Socket> clientsock);
     //客户端关闭,在Connection类中回调该函数

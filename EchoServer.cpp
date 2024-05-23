@@ -21,19 +21,26 @@ EchoServer::~EchoServer(){
 void EchoServer::start(int timeout){
     m_tcpserver.start(timeout);
 }
-//处理客户端新连接
+void EchoServer::stop(){
+    m_threadpool.stop();
+    m_tcpserver.stop();
+}
+// 处理客户端新连接
 void EchoServer::handleNewConnection(std::shared_ptr<Connection> conn){
     // printf("NewConnection, thread is:%d\n", syscall(SYS_gettid));
-    std::cout<<"new connection!"<<std::endl;
+    // std::cout<<"new connection!"<<std::endl;
+    printf("new connection: ip:%s port:%d\n", conn->ip().c_str(), conn->port());
 
 }
 //客户端关闭,在Connection类中回调该函数
 void EchoServer::handleCloseConnection(std::shared_ptr<Connection> conn){
-    std::cout<<"Conn Closed !"<<std::endl;
+    // std::cout<<"Conn Closed !"<<std::endl;
+    printf("close connection: ip:%s port:%d\n", conn->ip().c_str(), conn->port());
 }
 //客户端错误,在Connection类中回调该函数
 void EchoServer::handleErrorConnection(std::shared_ptr<Connection> conn){
-    std::cout<<"Conn Error !"<<std::endl;
+    // std::cout<<"Conn Error !"<<std::endl;
+    printf("Connection error: ip:%s port:%d\n", conn->ip().c_str(), conn->port());
 }
 //Connection类处理数据的调用函数
 void EchoServer::handleMessage(std::shared_ptr<Connection> conn, std::string& message){
@@ -60,7 +67,7 @@ void EchoServer::onMessage(std::shared_ptr<Connection> conn, std::string& messag
 
 //发送完成的回调函数
 void EchoServer::handleSendComplete(std::shared_ptr<Connection> conn){
-    std::cout<<"Send completed !"<<std::endl;
+    // std::cout<<"Send completed !"<<std::endl;
 }
 //epoll_wait超时回调函数
 void EchoServer::handleEpollTimeout(EventLoop* evloop){

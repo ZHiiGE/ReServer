@@ -44,7 +44,7 @@ void Epoll::removeChannel(Channel* ch){
             perror("epoll_ctl error");
             exit(-1);
         }
-        printf("remove channel\n");
+        // printf("remove channel\n");
     }
 }
 

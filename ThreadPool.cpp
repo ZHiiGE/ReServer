@@ -30,7 +30,7 @@ ThreadPool::ThreadPool(size_t threadsnum, const std::string& type):m_threadnums(
                     task = std::move(this->m_taskqueue.front()); 
                     this->m_taskqueue.pop();
                 }
-                printf("%s thread(%ld) runing\n", this->m_type.c_str(), syscall(SYS_gettid));
+                // printf("%s thread(%ld) runing\n", this->m_type.c_str(), syscall(SYS_gettid));
                 task();
             }
             
@@ -42,11 +42,7 @@ ThreadPool::ThreadPool(size_t threadsnum, const std::string& type):m_threadnums(
 
 ThreadPool::~ThreadPool()
 {
-    m_stop = true;
-    m_cv.notify_all();
-    for(auto &th:m_threads){
-        th.join();
-    }
+    stop();
 }
 
 void ThreadPool::addTask(std::function<void()> task){
@@ -57,6 +53,15 @@ void ThreadPool::addTask(std::function<void()> task){
     m_cv.notify_one();
 }
 
+void ThreadPool::stop(){
+    if(m_stop == true)
+        return;
+    m_stop = true;
+    m_cv.notify_all();
+    for(auto &th:m_threads){
+        th.join();
+    }
+}
 
 // void show(int no, std::string &name){
 //     std::cout<<"hello my name is"<<name<<". no is"<<no<<std::endl;

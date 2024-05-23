@@ -15,7 +15,7 @@ TcpServer::TcpServer(const std::string& ip, const uint16_t &port, int threadsnum
         m_subloops[ii]->setEpollwaitTimeoutCallback(std::bind(&TcpServer::handleEpollTimeout, this, std::placeholders::_1));
         m_subloops[ii]->setHandleConnTimeout(std::bind(&TcpServer::removeConn, this, std::placeholders::_1));
         m_threadpool.addTask(std::bind(&EventLoop::runLoop, m_subloops[ii].get(), -1));
-        sleep(1);
+        // sleep(1);
     }
 
 }
@@ -34,6 +34,17 @@ void TcpServer::start(int timeout){
     m_mainloop->runLoop(timeout);
 }
 
+void TcpServer::stop(){
+    //停止主事件循环
+    m_mainloop->stopLoop();
+    //停止IO事件循环
+    for(auto& loop:m_subloops){
+        loop->stopLoop();
+    }
+    //停止IO线程
+    m_threadpool.stop();
+}
+
 void TcpServer::handleNewConnection(std::unique_ptr<Socket> clientsock){
     std::shared_ptr<Connection> Conn(new Connection(m_subloops[clientsock->fd()%m_threadsnum].get(), std::move(clientsock)));
     Conn->setCloseCallback(std::bind(&TcpServer::handleCloseConnection, this, std::placeholders::_1));
@@ -41,7 +52,7 @@ void TcpServer::handleNewConnection(std::unique_ptr<Socket> clientsock){
     Conn->setHandleMessageCallback(std::bind(&TcpServer::handleMessage, this, std::placeholders::_1, std::placeholders::_2));
     Conn->setSendCompleteCallback(std::bind(&TcpServer::handleSendComplete, this, std::placeholders::_1));
     //log new socket accept
-    printf("new socket accept: ip:%s port:%d\n", Conn->ip().c_str(), Conn->port());
+    // printf("new socket accept: ip:%s port:%d\n", Conn->ip().c_str(), Conn->port());
 
     //Connection添加到TcpServer的map中
     {
@@ -57,8 +68,6 @@ void TcpServer::handleNewConnection(std::unique_ptr<Socket> clientsock){
 //客户端关闭,在Connection类中回调该函数
 void TcpServer::handleCloseConnection(std::shared_ptr<Connection> conn){
     if(m_closeconnectionCb) m_closeconnectionCb(conn);
-    //log close
-    // printf("client closed: %d\n", conn->fd());
     std::lock_guard<std::mutex> gd(m_mutex);
     m_conns.erase(conn->fd());
 }
@@ -73,7 +82,7 @@ void TcpServer::handleErrorConnection(std::shared_ptr<Connection> conn){
 
 void TcpServer::handleMessage(std::shared_ptr<Connection> conn, std::string& message){
     if(m_onmessageCb){
-        printf("message: %d\n", conn->fd());
+        // printf("message: %d\n", conn->fd());
         m_onmessageCb(conn, message);
     } 
 }

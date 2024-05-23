@@ -34,6 +34,8 @@ public:
 
     size_t size(){return m_threads.size();}
     void addTask(std::function<void()> task);
+    //停止线程池
+    void stop();
 };
 
 

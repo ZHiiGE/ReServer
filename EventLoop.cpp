@@ -12,7 +12,8 @@ int createTimer(int sec=5){
 }
 
 EventLoop::EventLoop(bool mainloopflag, int timeval, int timeout)
-            :m_mainloopflag(mainloopflag),
+            :m_stop(false),
+             m_mainloopflag(mainloopflag),
              m_timeval(timeval),
              m_timeout(timeout),
              m_ep(new Epoll),
@@ -33,7 +34,7 @@ EventLoop::~EventLoop(){
 
 void EventLoop::runLoop(int timeout){
     m_threadId = syscall(SYS_gettid);
-    while (true)
+    while (!m_stop)
     {
         std::vector<Channel*> chs = m_ep->loop(timeout);
 
@@ -48,8 +49,14 @@ void EventLoop::runLoop(int timeout){
     
 }
 
+void EventLoop::stopLoop(){
+    m_stop = true;
+    //唤醒epoll
+    wakeUp();
+}
 
-void EventLoop::updataChannel(Channel* ch){
+void EventLoop::updataChannel(Channel *ch)
+{
     m_ep->updataChannel(ch);
 }
 void EventLoop::setEpollwaitTimeoutCallback(std::function<void(EventLoop*)> fn){
@@ -104,13 +111,9 @@ void EventLoop::handleTimer(){
         
     }
     else{
-        printf("EventLoop thread is: %ld ", syscall(SYS_gettid));
+
         time_t now = time(0);//获取当前时间
 
-        // for(auto aa:m_conns){
-        //     std::cout<<aa.first<<" ";
-        //     m_conns.erase(aa.first);
-        // }
         for(auto it=m_conns.begin();it!=m_conns.end();){
             if((it->second->timeOut(now, m_timeout)) == true){
                 int fd = it->first;
@@ -125,7 +128,7 @@ void EventLoop::handleTimer(){
             }
 
         }
-        printf("\n");
+        // printf("\n");
     }
 }
 

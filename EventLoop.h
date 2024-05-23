@@ -8,6 +8,7 @@
 #include <queue>
 #include <map>
 #include <mutex>
+#include <atomic>
 #include <sys/eventfd.h>
 #include <sys/syscall.h>
 #include <sys/timerfd.h>
@@ -23,6 +24,8 @@ class Connection;
 
 class EventLoop{
 private:
+    //停止信号标志
+    std::atomic_bool m_stop;
     //标志 true为主事件循环
     bool m_mainloopflag;
     //定时器间隔
@@ -62,7 +65,10 @@ public:
     bool isMainloop(){
         return m_mainloopflag;
     }
+    //运行事件循环
     void runLoop(int timeout=-1);//运行事件循环
+    //停止事件循环
+    void stopLoop();
     void updataChannel(Channel* ch);
     //设置epoll_wait超时回调函数
     void setEpollwaitTimeoutCallback(std::function<void(EventLoop*)> fn);
