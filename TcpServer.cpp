@@ -1,10 +1,11 @@
 #include "TcpServer.h"
 
-TcpServer::TcpServer(const std::string& ip, const uint16_t &port, int threadsnum)
+TcpServer::TcpServer(const std::string& ip, const uint16_t &port, int threadsnum, uint16_t sep)
             :m_threadsnum(threadsnum),
              m_mainloop(new EventLoop(true)),
              m_acceptor(m_mainloop.get(), ip, port),
-             m_threadpool(m_threadsnum, "IO"){
+             m_threadpool(m_threadsnum, "IO"),
+             m_sep(sep){
     //创建主事件循环
     m_mainloop->setEpollwaitTimeoutCallback(std::bind(&TcpServer::handleEpollTimeout, this, std::placeholders::_1));
     m_acceptor.setnewConnCallback(std::bind(&TcpServer::handleNewConnection, this, std::placeholders::_1));
@@ -20,7 +21,7 @@ TcpServer::TcpServer(const std::string& ip, const uint16_t &port, int threadsnum
 
 }
 
-TcpServer::TcpServer():TcpServer("0.0.0.0", 8111){
+TcpServer::TcpServer(uint16_t sep):TcpServer("0.0.0.0", 8111, 3, sep){
 
 }
 
@@ -46,7 +47,7 @@ void TcpServer::stop(){
 }
 
 void TcpServer::handleNewConnection(std::unique_ptr<Socket> clientsock){
-    std::shared_ptr<Connection> Conn(new Connection(m_subloops[clientsock->fd()%m_threadsnum].get(), std::move(clientsock)));
+    std::shared_ptr<Connection> Conn(new Connection(m_subloops[clientsock->fd()%m_threadsnum].get(), std::move(clientsock), m_sep));
     Conn->setCloseCallback(std::bind(&TcpServer::handleCloseConnection, this, std::placeholders::_1));
     Conn->setErrorCallback(std::bind(&TcpServer::handleErrorConnection, this, std::placeholders::_1));
     Conn->setHandleMessageCallback(std::bind(&TcpServer::handleMessage, this, std::placeholders::_1, std::placeholders::_2));

@@ -9,12 +9,15 @@
 */
 class EchoServer{
 private:
+    //报文分隔符
+    const uint16_t m_sep;
     TcpServer m_tcpserver;
     //工作业务线程池
     ThreadPool m_threadpool;
 
+
 public:
-    EchoServer(const std::string &ip, const uint16_t &port, int loopthreadnums=3, int workthreadnums=5);
+    EchoServer(const std::string &ip, const uint16_t &port, int loopthreadnums=3, int workthreadnums=5, uint16_t sep = 1);
     ~EchoServer();
     
     //启动事件循环

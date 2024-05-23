@@ -1,6 +1,9 @@
 #include "EchoServer.h"
 
-EchoServer::EchoServer(const std::string &ip, const uint16_t &port,int loopthreadnums, int workthreadnums):m_threadpool(workthreadnums, "Works"), m_tcpserver(ip,port,loopthreadnums){
+EchoServer::EchoServer(const std::string &ip, const uint16_t &port,int loopthreadnums, int workthreadnums, uint16_t sep)
+                        :m_threadpool(workthreadnums, "Works"),
+                         m_tcpserver(ip,port,loopthreadnums, sep),
+                         m_sep(sep){
     m_tcpserver.setNewconnectionCb(std::bind(&EchoServer::handleNewConnection, this, std::placeholders::_1));
     m_tcpserver.setCloseconnectionCb(std::bind(&EchoServer::handleCloseConnection, this, std::placeholders::_1));
     m_tcpserver.setErrorconnectionCb(std::bind(&EchoServer::handleErrorConnection, this, std::placeholders::_1));

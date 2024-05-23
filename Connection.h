@@ -18,7 +18,9 @@ private:
     //对应连接Socket
     std::unique_ptr<Socket> m_clientsock;
     //对应连接Channel
-    std::unique_ptr<Channel> m_clientChannel;   
+    std::unique_ptr<Channel> m_clientChannel; 
+    //报文分隔符
+    const uint16_t m_sep;  
     Buffer m_inputbuffer;       //接收缓冲区
     Buffer m_outputbuffer;      //发送缓冲区
     std::atomic_bool m_disconnected; //连接是否已断开
@@ -35,7 +37,7 @@ private:
     //时间戳类
     Timestamp m_lasttime;
 public:
-    Connection(EventLoop* loop, std::unique_ptr<Socket> clientsock);
+    Connection(EventLoop* loop, std::unique_ptr<Socket> clientsock, uint16_t m_sep);
     ~Connection();
 
     int fd() const;

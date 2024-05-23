@@ -86,7 +86,7 @@ void EventLoop::wakeUp(){
 }
 
 void EventLoop::handleWakeup(){
-    printf("wakeup thread is: %ld\n", syscall(SYS_gettid));
+    // printf("wakeup thread is: %ld\n", syscall(SYS_gettid));
 
     uint64_t val;
     read(m_eventfd, &val, sizeof(val));

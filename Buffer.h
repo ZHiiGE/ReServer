@@ -2,6 +2,7 @@
 #define _BUFFER_H
 
 #include <string>
+#include <string.h>
 #include <iostream>
 
 /**
@@ -14,14 +15,18 @@ class Buffer
 private:
     //缓冲区
     std::string m_buf;
+    //分隔符类别： 0-无分隔符  1-四字节报文头 
+    const uint16_t m_sep;
 public:
-    Buffer(/* args */);
+    Buffer(uint16_t sep = 0);
     ~Buffer();
 
     //添加数据
     void append(const char* data, size_t size); 
     //带报文头添加数据
-    void appendWithhead(const char* data, size_t size);
+    void appendWithsep(const char* data, size_t size);
+    //读取报文体
+    bool pickMessage(std::string&);
     //删除指定区间的数据
     void erase(size_t pos, size_t nn);  
     //返回数据长度        

@@ -36,7 +36,8 @@ int main(int argc, char *argv[])
 
     printf("connect ok.\n");
     // printf("开始时间：%d\n",time(0));
-// sleep(1000);
+
+
     for (int ii=0;ii<10;ii++)
     {
         memset(buf,0,sizeof(buf));
@@ -58,6 +59,21 @@ int main(int argc, char *argv[])
         printf("recv:%s\n",buf);
 sleep(1);
     }
+
+
+//     for (int ii=0;ii<10;ii++)
+//     {
+//         memset(buf,0,sizeof(buf));
+//         sprintf(buf,"这是第%d个超级女生。",ii);
+
+//         send(sockfd,buf,strlen(buf),0);  // 把请求报文发送给服务端。
+        
+//         memset(buf,0,sizeof(buf));
+//         recv(sockfd,buf,1024,0);           // 读取报文内容。
+
+//         printf("recv:%s\n",buf);
+// sleep(1);
+//     }
 
     // printf("结束时间：%d\n",time(0));
 } 

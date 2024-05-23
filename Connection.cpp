@@ -1,7 +1,10 @@
 #include "Connection.h"
 
-Connection::Connection(EventLoop* loop, std::unique_ptr<Socket> clientsock)
+Connection::Connection(EventLoop* loop, std::unique_ptr<Socket> clientsock, uint16_t sep)
                 :m_loop(loop),
+                 m_sep(sep),
+                 m_inputbuffer(sep),
+                 m_outputbuffer(sep),
                  m_clientsock(std::move(clientsock)), 
                  m_clientChannel(new Channel(m_loop, m_clientsock->fd())), 
                  m_disconnected(false){
@@ -70,13 +73,10 @@ void Connection::onMessage(){
             continue;
         }
         else if(nread == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))){//读取完毕
+            std::string message;
             while(true){
-                int len;//获取报文长度
-                memcpy(&len, m_inputbuffer.data(), 4);
-                if(m_inputbuffer.size()<len+4) break; //报文长度不足
-
-                std::string message(m_inputbuffer.data()+4, len);//获取报文体
-                m_inputbuffer.erase(0, len+4);//从缓冲区中删除以获取报文
+                if(m_inputbuffer.pickMessage(message) == false)
+                    break;
                 //数据处理
                 m_lasttime = Timestamp::now();
                 // std::cout<<m_lasttime.tostring()<<std::endl;
@@ -107,16 +107,16 @@ void Connection::send(const char* data, size_t size){
         // printf("不在\n");
         std::shared_ptr<char[]> Cstr(new char[size+1], [](char* p){delete []p;});
         strcpy(Cstr.get(), data);
-        m_loop->addTasktoqueue(std::bind((void(Connection::*)(const std::shared_ptr<char[]> data, size_t size))&Connection::sendinLoop, this, Cstr, size));
+                m_loop->addTasktoqueue(std::bind((void(Connection::*)(const std::shared_ptr<char[]> data, size_t size))&Connection::sendinLoop, this, Cstr, size));
     }
 
 }
 void Connection::sendinLoop(const char* data, size_t size){
-    m_outputbuffer.appendWithhead(data, size);
+    m_outputbuffer.appendWithsep(data, size);
     m_clientChannel->enablewriting();
 }
 void Connection::sendinLoop(const std::shared_ptr<char[]> data, size_t size){
-    m_outputbuffer.appendWithhead(data.get(), size);
+    m_outputbuffer.appendWithsep(data.get(), size);
     m_clientChannel->enablewriting();
 }
 bool Connection::timeOut(time_t now, int val)

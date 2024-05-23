@@ -24,6 +24,9 @@ private:
     //线程池
     ThreadPool m_threadpool;
 
+    //报文分隔符
+    const uint16_t m_sep;
+
 
     Acceptor m_acceptor;
     //m_conns的互斥锁
@@ -43,8 +46,8 @@ private:
     //回调具体业务类的timeout
     std::function<void(EventLoop*)> m_timeoutCb;
 public:
-    TcpServer();
-    TcpServer(const std::string &ip, const uint16_t &port, int threadsnum=3);
+    TcpServer(uint16_t m_sep = 1);
+    TcpServer(const std::string &ip, const uint16_t &port, int threadsnum=3, uint16_t m_sep=1);
     ~TcpServer();
 
     // //返回EventLoop
