@@ -62,14 +62,9 @@ void Connection::setSendCompleteCallback(std::function<void(std::shared_ptr<Conn
 }
 
 void Connection::onMessage(){
-    char buffer[1024];
     while(true){
-        bzero(&buffer, sizeof(buffer));
-        ssize_t nread = read(fd(), buffer, sizeof(buffer));
-        if(nread >0 ){
-            m_inputbuffer.append(buffer, nread);
-        }
-        else if(nread == -1 && errno == EINTR){//由信号中断 则继续读取
+        int nread = m_inputbuffer.readFd(fd());
+        if(nread == -1 && errno == EINTR){//由信号中断 则继续读取
             continue;
         }
         else if(nread == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))){//读取完毕
@@ -82,9 +77,7 @@ void Connection::onMessage(){
                 // std::cout<<m_lasttime.tostring()<<std::endl;
                 printf("message (eventfd=%d):%s\n",fd(),message.c_str());
                 m_handleMessageCallback(shared_from_this(), message);//回调TcpServer::handleMessage()
-
             }
-
             break;
         }
         else if(nread == 0){//客户端断开连接           

@@ -4,6 +4,7 @@
 #include <string>
 #include <string.h>
 #include <iostream>
+#include <unistd.h>
 
 /**
  * @class:Buffer
@@ -21,6 +22,8 @@ public:
     Buffer(uint16_t sep = 0);
     ~Buffer();
 
+    //从socket中读取数据
+    int readFd(int);
     //添加数据
     void append(const char* data, size_t size); 
     //带报文头添加数据

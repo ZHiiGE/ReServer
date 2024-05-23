@@ -6,7 +6,17 @@ Buffer::Buffer(uint16_t sep):m_sep(sep){
 Buffer::~Buffer(){
 }
 
-void Buffer::append(const char* data, size_t size){
+int Buffer::readFd(int fd){
+    char buffer[1024];
+    bzero(&buffer, sizeof(buffer));
+    ssize_t nread = read(fd, buffer, sizeof(buffer));
+    if(nread > 0)
+        m_buf.append(buffer, nread);
+    return nread;
+}
+
+void Buffer::append(const char *data, size_t size)
+{
     m_buf.append(data, size);
 }
 
